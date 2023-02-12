@@ -2,7 +2,7 @@
 
 figure = [[0,1,0],
 		  [0,1,0],
-		  [0,1,0]]
+		  [0,1,1]]
 
 # first example
 
@@ -73,11 +73,41 @@ def checkFreePlaceForFig(yGlass, xGlass, glass, figure)
 end
 
 
-glassArr = projectFigure(5,5,arrayGlass(10,10),figure)
+def rotationFigure(figure)
+	figureNew = (0..2).map{Array.new(3)}
+	#printFIgure(figureNew)
+	s = figure.size()
+	#p s
+	for y in 0...s
+		for x in 0...s
+			#p s-y+1
+			figureNew[x][s-y-1] = figure[y][x]
+		end
+	end
+	return figureNew
+end
 
-printGlass(glassArr)
+def printFIgure(fig)
+	
+		for x in 0...fig.size()
+			p fig[x]
+		end
+		
+	
+end
 
-puts checkFreePlaceForFig(5,4,glassArr,figure)
+p "фигура сначала: "
+printFIgure(figure)
+print "\n"
+print "фигура перевернутая: "
+print"\n"
+printFIgure(rotationFigure(figure))
+
+#glassArr = projectFigure(5,5,arrayGlass(10,10),figure)
+
+#printGlass(glassArr)
+
+#puts checkFreePlaceForFig(5,4,glassArr,figure)
 
 #TODO протестить в glaas check функцию положить туда фигуру , установить ncurses
 
