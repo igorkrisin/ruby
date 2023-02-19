@@ -1,13 +1,42 @@
 
- require "curses"
+require "curses"
 include Curses
 require 'time'
 
-figure = [[0,1,0],
-	  [0,1,0],
-	  [0,1,0]]
 
-# first example
+
+figure1 = [[0,1,0],
+	   [0,1,0],
+	   [0,1,0]]
+
+figure2 = [[0,1,0],
+	   [0,1,0],
+	   [0,1,1]]
+
+
+figure3 = [[0,1,0],
+	   [0,1,0],
+	   [1,1,0]]
+
+figure4 = [[0,1,1],
+	   [0,1,0],
+	   [1,1,0]]
+
+figure5 = [[1,1,0],
+	   [0,1,0],
+	   [0,1,1]]
+
+
+figure6 = [[1,1,1],
+	   [0,1,0],
+	   [0,1,0]]
+
+$figureArr = [figure1,figure2,figure3,figure4,figure5,figure6] 
+
+def randomFig(fig)
+    return fig[rand(0..5)]
+end
+
 
 def arrayGlass(hight, width)
 	glass = []
@@ -67,24 +96,73 @@ end
 
 #TODO MAKE DROP FIGURE
 
-def dropFigure(figure)
+def movementToTheSide(figure)
+    sizeGly = 10
+    sizeGlx = 10
+    yStart = 0
+    xStart = 4
+    sizeFigY = 3
+    glass = arrayGlass(sizeGly, sizeGlx)
+    while( xStart >= 0) do
+	stdscr.keypad = true 
+	tempGlass = copyGlass(glass)
+	projectFigure(xStart, yStart, glass, figure)
+	outInCurses(glass,sizeGlx, sizeGly)
+	move = getch
+	if(move == KEY_LEFT)
+	    xStart -= 1
+	end
+	if(move == KEY_RIGHT)
+	    xStart += 1
+	    
+	end
+	if(xStart >= sizeGlx)
+	    xStart = sizeGlx
+	    next
+	end
+	if(xStart <= 0)
+	    xStart = 0
+	    next
+	end
+	
+	glass = tempGlass
+    end
+
+end
+
+
+def dropFigure(figure, figureArr)
     sizeGly = 10
     sizeGlx = 10
     yStart = 0
     xStart = 5
     sizeFigY = 3
+    
+    #stdscr.nodelay  = 1
     glass = arrayGlass(sizeGly, sizeGlx)
     while( yStart < sizeGly) do
 	tempGlass = copyGlass(glass)
+	
 	projectFigure(xStart, yStart, glass, figure)
 	outInCurses(glass,5 ,5)
-	yStart += 1
+
+	cbreak
+	stdscr.nodelay = 1
+	sleep(1)
 	getch
-	if(yStart == sizeGly - sizeFigY+1 ||  !checkFreePlaceForFig(yStart, xStart, glass, figure))
+	
+	curs_set(0)
+	#curs_set(0)
+	yStart += 1
+	if(yStart == sizeGly - sizeFigY+1 || !checkFreePlaceForFig(yStart, xStart, glass, figure))
+	    figure = randomFig($figureArr)
 	    yStart = 0
+	    
+	    #figure = randomFig(figureArr)
 	    next
 	end
 	glass = tempGlass
+	#figure = randomFig(figureArr)
     end
 end
 
@@ -113,6 +191,7 @@ def projectFigure(xInGlass, yInGlass, glass, figure)
 	return glass
 	
 end
+
 
 
 
@@ -154,11 +233,11 @@ def printFIgure(fig)
 	
 end
 
-glassArr = projectFigure(5,5,arrayGlass(10,10),figure)
+#glassArr = projectFigure(5,5,arrayGlass(10,10),figure)
 
 #print returnGlass(glassArr)
 
-puts checkFreePlaceForFig(5,4,glassArr,figure)
+#puts checkFreePlaceForFig(5,4,glassArr,figure)
 
 #TODO протестить в glaas check функцию положить туда фигуру , установить ncurses
 
@@ -169,18 +248,19 @@ puts checkFreePlaceForFig(5,4,glassArr,figure)
 #__END__
 
 Curses.init_screen
+
+
 begin
-    
-  xFig = 0
-  yFig = 0
-  glass = arrayGlass(10,10)
   
   Curses.crmode
-  #outInCurses(projectFigure(5,5,glass,figure), (Curses.lines-1)/4, (Curses.cols - 11)/3)
-  dropFigure(figure)
- # Curses.setpos((Curses.lines - 1) / 2, (Curses.cols - 11) / 2)
- # Curses.addstr(printGlass(arrayGlass(10,10)))
-
+    #outInCurses(projectFigure(5,5,glass,figure), (Curses.lines-1)/4, (Curses.cols - 11)/3)
+    #Curses.setpos(15, 15)
+    Curses.addstr(randomFig($figureArr).to_s)
+    dropFigure(randomFig($figureArr), $figureArr)
+    # Curses.setpos((Curses.lines - 1) / 2, (Curses.cols - 11) / 2)
+    # Curses.addstr(printGlass(arrayGlass(10,10)))
+    #movementToTheSide(figure)
+    
   Curses.refresh
   Curses.getch
  
