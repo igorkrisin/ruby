@@ -50,8 +50,6 @@ def arrayGlass(hight, width)
 	return glass
 end
 
-#p arrayGlass(10,10)
-
 
 def arrayGlass(hight, width)
 	glass = []
@@ -68,11 +66,12 @@ def arrayGlass(hight, width)
 	return glass
 end
 
+
 def returnGlass(arrayGlass)
 	str = ""
-	for i in 0...arrayGlass.size()	
-		for y in 0...arrayGlass[i].size()
-			str	+= arrayGlass[i][y].to_s
+	for y in 0...arrayGlass.size()
+		for x in 0...arrayGlass[x].size()
+			str	+= arrayGlass[y][x].to_s
 		end
 		str += "\n"
 	end
@@ -83,52 +82,15 @@ end
 def outInCurses(arrayGl, xStart, yStart)
 	for y in 0...arrayGl.size()
 		for x in 0...arrayGl[y].size()		
-			Curses.setpos(xStart+x, yStart+y)
+			Curses.setpos(yStart+y, xStart+x)
 			#Curses.addstr(arrayGl[x][y].to_s)
-			if arrayGl[x][y] == 0
+			if arrayGl[y][x] == 0
 			    Curses.addstr(".")
-			elsif arrayGl[x][y] == 1
+			elsif arrayGl[y][x] == 1
 			    Curses.addstr("s")
 			end
 		end
 	end
-end
-				
-	
-#printGlass(arrayGlass(10,10))
-
-
-#TODO MAKE DROP FIGURE
-
-def movementToTheSide(figure)
-    sizeGly = 10
-    sizeGlx = 10
-    yStart = 0
-    xStart = 4
-    sizeFigY = 3
-    glass = arrayGlass(sizeGly, sizeGlx)
-    while( xStart >= 0) do
-	stdscr.keypad = true 
-	tempGlass = copyGlass(glass)
-	projectFigure(xStart, yStart, glass, figure)
-	outInCurses(glass,sizeGlx, sizeGly)
-	move = getch
-	if(move == KEY_LEFT)
-	    xStart -= 1
-	end
-	if(move == KEY_RIGHT)
-	    xStart += 1
-	end
-	if(xStart >= sizeGlx)
-	    xStart = sizeGlx
-	    next
-	end
-	if(xStart <= 0)
-	    xStart = 0
-	    next
-	end
-	glass = tempGlass
-    end
 end
 
 
@@ -138,41 +100,36 @@ def dropFigure(figure, figureArr)
     yStart = 0
     xStart = 5
     sizeFigY = 3
-    
-    #stdscr.nodelay  = 1
     glass = arrayGlass(sizeGly, sizeGlx)
     while( yStart < sizeGly) do
+	clearFullLine(glass)
 	tempGlass = copyGlass(glass)
 	projectFigure(xStart, yStart, glass, figure)
 	outInCurses(glass,5 ,5)
-	#movementToTheSide(figure)
 	cbreak
 	stdscr.nodelay = 1
 	sleep(1)
 	#getch
 	case getch
 	    when ?A, ?a then
-		if checkOutOfGlass(xStart, yStart, glass, figure)
+		if checkOutOfGlass(yStart, xStart, glass, figure)
 		    xStart -= 1
 		    Curses.addstr(xStart.to_s)
 		end
 	    when ?D, ?d then
-		if checkOutOfGlass(xStart, yStart, glass, figure)
+		if checkOutOfGlass(yStart, xStart, glass, figure)
 		    xStart += 1
-		    Curses.addstr(xStart.to_s)
+		    #Curses.addstr(xStart.to_s)
 		end
 	    #when ?S, ?s then
-	#	rotationFigure(figure)
+		#rotationFigure(figure)
 	end
 	curs_set(0)
-	#curs_set(0)
 	yStart += 1
 	if(yStart == sizeGly - sizeFigY+1 || !checkFreePlaceForFig(yStart, xStart, glass, figure))
 	    figure = randomFig($figureArr)
 	    yStart = 0
 	    xStart = 5
-	    
-	    #figure = randomFig(figureArr)
 	    next
 	end
 	glass = tempGlass
@@ -197,8 +154,8 @@ end
 #print returnGlass(copyGlass(arrayGlass(10,10)))
 	
 def projectFigure(xInGlass, yInGlass, glass, figure)
-	for x in 0...figure.size()
-		for y in 0...figure[x].size() 
+	for y in 0...figure.size()
+		for x in 0...figure[y].size() 
 		    if(figure[y][x] == 0)
 			next
 		    end
@@ -209,10 +166,10 @@ def projectFigure(xInGlass, yInGlass, glass, figure)
 	
 end
 
-def checkOutOfGlass(xInGlass, yInGlass, glass, figure)
+def checkOutOfGlass(yInGlass, xInGlass, glass, figure)
     for y in 0...figure.size()
 	for x in 0...figure[y].size()
-	    if  figure[y][x] == 1 && yInGlass+y >= glass.size()-1 && xInGlass+x >= glass[y].size()-1 && yInGlassy+y < 0 && xInGlass+x < 0
+	    if  figure[y][x] == 1 && (yInGlass+y >= glass.size()-1 || xInGlass+x >= glass[y].size()-1 || yInGlass+y <= 0 || xInGlass+x <= 0)
 		return false
 	    end
 	end
@@ -240,6 +197,13 @@ end
 
 #func for each line if checkLineFild = TRUE then make shiftDownLine
 
+def clearFullLine(glass)
+    for y in 0...glass.size()
+	if checkLineFild(glass, y)
+	    shiftDownLine(glass, y)
+	end
+    end
+end
 
 #printGlass(projectFigure(5,5,figure, arrayGlass(10,10)))
 
@@ -270,13 +234,12 @@ def rotationFigure(figure)
 	return figureNew
 end
 
+Curses.addstr(rotationFigure(figure1).to_s)
+
 def printFIgure(fig)
-	
-		for x in 0...fig.size()
-			p fig[x]
-		end
-		
-	
+    for x in 0...fig.size()
+        p fig[x]
+    end
 end
 
 #glassArr = projectFigure(5,5,arrayGlass(10,10),figure)
@@ -314,3 +277,42 @@ ensure
   Curses.close_screen
 end
 #=end
+
+
+
+
+
+
+
+
+
+def movementToTheSide(figure)
+    sizeGly = 10
+    sizeGlx = 10
+    yStart = 0
+    xStart = 4
+    sizeFigY = 3
+    glass = arrayGlass(sizeGly, sizeGlx)
+    while( xStart >= 0) do
+	stdscr.keypad = true 
+	tempGlass = copyGlass(glass)
+	projectFigure(xStart, yStart, glass, figure)
+	outInCurses(glass,sizeGlx, sizeGly)
+	move = getch
+	if(move == KEY_LEFT)
+	    xStart -= 1
+	end
+	if(move == KEY_RIGHT)
+	    xStart += 1
+	end
+	if(xStart >= sizeGlx)
+	    xStart = sizeGlx
+	    next
+	end
+	if(xStart <= 0)
+	    xStart = 0
+	    next
+	end
+	glass = tempGlass
+    end
+end
