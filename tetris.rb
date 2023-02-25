@@ -3,40 +3,45 @@ require "curses"
 include Curses
 require 'time'
 
-#p stdscr.methods
+#p Curses.methods
 
-
+$count = 0
+$live = 3
 
 figure1 = [[0,1,0],
-	   [0,1,0],
-	   [0,1,0]]
+	   			 [0,1,0],
+	   			 [0,1,0]]
 
 figure2 = [[0,1,0],
-	   [0,1,0],
-	   [0,1,1]]
+	   			 [0,1,0],
+	   			 [0,1,1]]
 
 
 figure3 = [[0,1,0],
-	   [0,1,0],
-	   [1,1,0]]
+	   			 [0,1,0],
+	   			 [1,1,0]]
 
 figure4 = [[0,1,1],
-	   [0,1,0],
-	   [1,1,0]]
+	   			 [0,1,0],
+	   			 [1,1,0]]
 
 figure5 = [[1,1,0],
-	   [0,1,0],
-	   [0,1,1]]
+	   			 [0,1,0],
+	   			 [0,1,1]]
 
 
 figure6 = [[1,1,1],
-	   [0,1,0],
-	   [0,1,0]]
+	   			 [0,1,0],
+	   			 [0,1,0]]
 
-$figureArr = [figure1,figure2,figure3,figure4,figure5,figure6]
+figure7 = [[1,1,1],
+	   			 [1,1,1],
+	   			 [1,1,1]]
+
+$figureArr = [figure1,figure2,figure3,figure4,figure5,figure6,figure7, figure7, figure1]
 
 def randomFig(fig)
-    return fig[rand(0..5)]
+    return fig[rand(0...fig.size())]
 end
 
 
@@ -95,23 +100,50 @@ def outInCurses(arrayGl, xStart, yStart)
 	end
 end
 
-
+#(Curses.lines - 1) / 2, (Curses.cols - 11) / 2
 def dropFigure(figure, figureArr)
-    sizeGly = 20
-    sizeGlx = 10
+    sizeGly = 15
+    sizeGlx = 15
     yStart = 0
-    xStart = 4
+    xStart = sizeGlx/2
     sizeFigY = 3
     glass = arrayGlass(sizeGly, sizeGlx)
-    while( yStart < sizeGly) do
+    while(yStart < sizeGly) do
+
+			Curses.setpos(1, 0)
+			Curses.addstr("live: ")
+			Curses.addstr($live.to_s)
+
+			Curses.setpos(5, 0)
+			Curses.addstr("count: ")
+			Curses.addstr($count.to_s)
+
 			clearFullLine(glass)
 			tempGlass = copyGlass(glass)
+
+
 			projectFigure(xStart, yStart, glass, figure)
-			outInCurses(glass,5 ,5)
+			if check0InY(tempGlass)
+
+				tempGlass = makeNewGlass(glass)
+				glass = tempGlass
+				$live -= 1
+			end
+
 			cbreak
 			stdscr.nodelay = 1
+			if $live == 0
+				Curses.setpos(8, 10)
+				Curses.addstr("Game over")
+				Curses.timeout = (5000)
 
-			#getch
+
+				break
+			end
+
+			outInCurses(glass,70 ,20)
+
+
 			case getch
 					when ?A, ?a then
 				if checkOutOfGlass(yStart, xStart, glass, figure)
@@ -128,6 +160,7 @@ def dropFigure(figure, figureArr)
 				when ?S, ?s then
 					figure = rotationFigure(figure)
 			end
+
 			curs_set(0)
 			yStart += 1
 			sleep(1)
@@ -135,18 +168,47 @@ def dropFigure(figure, figureArr)
 			if(!checkDownNumb(yStart, xStart, tempGlass, figure) && (yStart == sizeGly - sizeFigY+1|| !checkFreePlaceForFig(yStart, xStart, tempGlass, figure)))
 					figure = randomFig($figureArr)
 					yStart = 0
-					xStart = 4
+
 					next
 			elsif(checkDownNumb(yStart, xStart, tempGlass, figure) && (yStart == sizeGly - sizeFigY+2|| !checkFreePlaceForFig(yStart, xStart, tempGlass, figure)))
 					figure = randomFig($figureArr)
 					yStart = 0
-					xStart = 4
+
 					next
 			end
 
 			glass = tempGlass
 			#figure = randomFig(figureArr)
 		end
+end
+
+def makeNewGlass(glass)
+	for y in 0...glass.size()
+		for x in 0...glass[y].size()
+			glass[y][x] = 0
+		end
+	end
+	return glass
+end
+
+
+def check0InY(glass)
+	count = 0
+	for x in 0...glass[0].size()
+		for y in 0...glass.size()
+			if glass[y][x] == 0
+				count = 0
+				break
+			else
+				count+=1
+				#p count
+			end
+			if count == glass.size()
+				return true
+			end
+		end
+	end
+	return false
 end
 
 def checkDownNumb(yInGlass, xInGlass, glass, figure)
@@ -203,7 +265,7 @@ def checkOutOfGlass(yInGlass, xInGlass, glass, figure)
 end
 
 def checkLineFild(glass, numLineY)
-  for x in (numLineY).downto(0)
+  for x in 0...glass[numLineY].size()
 		if glass[numLineY][x] == 0
 				return false
 		end
@@ -212,13 +274,25 @@ def checkLineFild(glass, numLineY)
 end
 
 def shiftDownLine(glass, numLineY)
-  for y in numLineY-1..0
+  for y in (numLineY).downto(0)
 		for x in 0...glass[numLineY].size()
-			glass[numLineY][x] = glass[y][x]
+			if y-1 >= 0
+				glass[y][x] = glass[y-1][x]
+			end
 		end
-    numLineY -= 1
-    end
+
   end
+	oneToZero(glass, 0)
+end
+
+def oneToZero(glass,lineY)
+	for x in 0...glass[lineY].size()
+		if glass[lineY][x] == 1
+			glass[lineY][x] = 0
+		end
+	end
+
+end
 
 #func for each line if checkLineFild = TRUE then make shiftDownLine
 
@@ -229,7 +303,6 @@ def clearFullLine(glass)
 		end
   end
 end
-
 #printGlass(projectFigure(5,5,figure, arrayGlass(10,10)))
 
 def checkFreePlaceForFig(yInGlass, xInGlass, glass, figure)
@@ -307,35 +380,3 @@ end
 
 
 
-
-
-def movementToTheSide(figure)
-    sizeGly = 10
-    sizeGlx = 10
-    yStart = 0
-    xStart = 4
-    sizeFigY = 3
-    glass = arrayGlass(sizeGly, sizeGlx)
-    while( xStart >= 0) do
-	stdscr.keypad = true
-	tempGlass = copyGlass(glass)
-	projectFigure(xStart, yStart, glass, figure)
-	outInCurses(glass,sizeGlx, sizeGly)
-	move = getch
-	if(move == KEY_LEFT)
-	    xStart -= 1
-	end
-	if(move == KEY_RIGHT)
-	    xStart += 1
-	end
-	if(xStart >= sizeGlx)
-	    xStart = sizeGlx
-	    next
-	end
-	if(xStart <= 0)
-	    xStart = 0
-	    next
-	end
-	glass = tempGlass
-    end
-end
