@@ -108,7 +108,7 @@ def dropFigure(figure, figureArr)
 			tempGlass = copyGlass(glass)
 			projectFigure(xStart, yStart, glass, figure)
 			outInCurses(glass,5 ,5)
-			cbreaks
+			cbreak
 			stdscr.nodelay = 1
 
 			#getch
@@ -203,7 +203,7 @@ def checkOutOfGlass(yInGlass, xInGlass, glass, figure)
 end
 
 def checkLineFild(glass, numLineY)
-  for x in 0...glass[numLineY].size()
+  for x in (numLineY).downto(0)
 		if glass[numLineY][x] == 0
 				return false
 		end
