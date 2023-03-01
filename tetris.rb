@@ -7,6 +7,7 @@ require 'time'
 
 $count = 0
 $live = 3
+$speed = 1.5
 
 figure1 = [[0,1,0],
 	   			 [0,1,0],
@@ -38,7 +39,15 @@ figure7 = [[1,1,1],
 	   			 [1,1,1],
 	   			 [1,1,1]]
 
-$figureArr = [figure1,figure2,figure3,figure4,figure5,figure6,figure7, figure7, figure1]
+figure8 = [[0,1,0],
+	   			 [0,1,0],
+	   			 [0,1,0]]
+
+figure9 = [[1,1,1],
+	   			 [1,1,1],
+	   			 [1,1,1]]
+
+$figureArr = [figure1,figure2,figure3,figure4,figure5,figure6,figure7, figure7, figure1, figure1, figure7, figure8, figure9]
 
 def randomFig(fig)
     return fig[rand(0...fig.size())]
@@ -130,7 +139,7 @@ def dropFigure(figure, figureArr)
 				$live -= 1
 			end
 
-			cbreak
+			#cbreak
 			stdscr.nodelay = 1
 			if $live == 0
 				Curses.setpos(8, 10)
@@ -163,17 +172,30 @@ def dropFigure(figure, figureArr)
 
 			curs_set(0)
 			yStart += 1
-			sleep(1)
 
-			if(!checkDownNumb(yStart, xStart, tempGlass, figure) && (yStart == sizeGly - sizeFigY+1|| !checkFreePlaceForFig(yStart, xStart, tempGlass, figure)))
+			sleep($speed)
+			if $count == 10
+				$speed -= 0.1
+			end
+			if $count == 100
+				Curses.setpos(8, 10)
+				Curses.addstr("you win!")
+				Curses.timeout = (5000)
+
+
+				break
+			end
+			#Curses.timeout = (500)
+			cbreak
+			if(!checkDownNumb(yStart, xStart, tempGlass, figure) && (yStart == sizeGly - sizeFigY+1 || !checkFreePlaceForFig(yStart, xStart, tempGlass, figure)))
 					figure = randomFig($figureArr)
 					yStart = 0
-
+					xStart = sizeGlx/2
 					next
 			elsif(checkDownNumb(yStart, xStart, tempGlass, figure) && (yStart == sizeGly - sizeFigY+2|| !checkFreePlaceForFig(yStart, xStart, tempGlass, figure)))
 					figure = randomFig($figureArr)
 					yStart = 0
-
+					xStart = sizeGlx/2
 					next
 			end
 
@@ -300,6 +322,7 @@ def clearFullLine(glass)
   for y in 0...glass.size()
 		if checkLineFild(glass, y)
 			shiftDownLine(glass, y)
+			$count += 1
 		end
   end
 end
