@@ -3,6 +3,8 @@ require "curses"
 include Curses
 require 'time'
 
+
+
 #p Curses.methods
 
 $count = 0
@@ -164,16 +166,25 @@ def dropFigure(figure, figureArr)
 						xStart += 1
 						#Curses.addstr(xStart.to_s)
 				end
+          when ?S, ?s then
+            sleepTime(0.5)
+				#if checkOutOfGlass(yStart, xStart, glass, figure)
+						#yStart += 1
+						#Curses.addstr(xStart.to_s)
+				#end
+
 				when ?P, ?p then
 					sleep(15)
-				when ?S, ?s then
+
+				when ?E, ?e then
 					figure = rotationFigure(figure)
+        else
+          sleepTime($speed)
+			    curs_set(0)
 			end
 
-			curs_set(0)
 			yStart += 1
-
-			sleep($speed)
+			#sleep($speed)
 			if $count == 10
 				$speed -= 0.1
 			end
@@ -212,6 +223,7 @@ def makeNewGlass(glass)
 	end
 	return glass
 end
+
 
 
 def check0InY(glass)
@@ -372,6 +384,21 @@ end
 
 #!/usr/bin/env rub
 #=begin
+#timeNow = Time.now.to_i
+
+#puts timeNow.round(5)/0.1
+
+
+def sleepTime(secFloat)
+timeNow = Time.now.to_f
+  while (Time.now.to_f- (timeNow)).round(1) != secFloat
+
+    #puts (Time.now.to_f- (timeNow)).round(1)
+  end
+  #puts "END"
+end
+
+#sleepTime(1, yStart)
 
 #__END__
 
