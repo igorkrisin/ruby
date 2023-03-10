@@ -14,7 +14,7 @@ $count = 0
 $live = 3
 $speed = 0.5
 
-$sizeGly = 25
+$sizeGly = 20
 $sizeGlx = 15
 $yStart = 0
 $xStart = $sizeGlx/2
@@ -122,10 +122,14 @@ def outInCurses(arrayGl, yStart, xStart)
 			end
 		end
 	end
+	Curses.refresh
 end
 
-#(Curses.lines - 1) / 2, (Curses.cols - 11) / 2
+
+
 def dropFigure()
+    cbreak
+    stdscr.nodelay = 1
     $glass = arrayGlass($sizeGly, $sizeGlx)
 
     while($yStart < $sizeGly) do
@@ -139,18 +143,16 @@ def dropFigure()
 			Curses.addstr($count.to_s)
 
 			clearFullLine($glass)
-			$tempGlass = copyGlass($glass)
 
-      projectFigure($xStart, $yStart, $glass, $figure)
-			if check0InY($tempGlass)
 
-				$tempGlass = makeNewGlass($glass)
-				$glass = $tempGlass
+			if checkGameOver($glass)
+
+				$glass = makeNewGlass($glass)
 				$live -= 1
 			end
 
 			#cbreak
-			stdscr.nodelay = 1
+			#stdscr.nodelay = 1
 			if $live == 0
 				Curses.setpos(8, 10)
 				Curses.addstr("Game over")
@@ -158,46 +160,55 @@ def dropFigure()
 				break
 			end
 
-			outInCurses($glass,$startGlassY ,$startGlassX)
-
-      sleepTime($speed)
-      #outInCurses($tempGlass,$startGlassY ,$startGlassX)
-
-      #outInCurses($glass,$startGlassY ,$startGlassX)
+			sleepTime($speed)
 
 
-      #projectFigure($xStart, $yStart, $glass, $figure1)
-			curs_set(0)
+			outInCurses(projectFigure($xStart,$yStart, copyGlass($glass), $figure),$startGlassY ,$startGlassX)
 			$yStart += 1
+			curs_set(0)
+
+
+
+    			    Curses.setpos(35, 45)
+    			    Curses.addstr($yStart.to_s)
+
 			#sleep($speed)
 			if $count == 10
-				$speed -= 0.1
+				$speed -= 0.1#увеличение скорости игры при достижении 10 очков
 			end
-			if $count == 100
+			if $count == 100#при достижении 100 очков - победа
 				Curses.setpos(8, 10)
 				Curses.addstr("you win!")
 				Curses.timeout = (5000)
 				break
 			end
 			#Curses.timeout = (500)
-			cbreak
-			if(!checkDownNumb($yStart, $xStart, $tempGlass, $figure) && ($yStart == $sizeGly - $sizeFigY+1 || !checkFreePlaceForFig($yStart, $xStart, $tempGlass, $figure)))
+
+			if(checkDownNumb($yStart, $xStart, $glass, $figure) && (  $yStart == $sizeGly - $sizeFigY+1 || !checkFreePlaceForFigLise($yStart, $xStart, $glass, $figure) ))
+				Curses.setpos(45, 15)#фигура лежа
+				Curses.addstr("fics check")
+				$glass = projectFigure($xStart,$yStart, $glass, $figure) # фиксация
+				$figure = randomFig($figureArr)
+				$yStart = 0
+				$xStart = $sizeGlx/2
+
+
+
+			elsif(!checkDownNumb($yStart, $xStart, $glass, $figure) && ($yStart == $sizeGly - $sizeFigY || !checkFreePlaceForFig($yStart, $xStart, $glass, $figure)))
+				Curses.setpos(40, 15) #фигура стоя
+				Curses.addstr("fics !check")
+        	$glass = projectFigure($xStart,$yStart, $glass, $figure) # фиксация
         	$figure = randomFig($figureArr)
 			    $yStart = 0
 			    $xStart = $sizeGlx/2
-			    next
-			elsif(checkDownNumb($yStart, $xStart, $tempGlass, $figure) && ($yStart == $sizeGly - $sizeFigY+2|| !checkFreePlaceForFig($yStart, $xStart, $tempGlass, $figure)))
-        		    $figure = randomFig($figureArr)
-			    $yStart = 0
-			    $xStart = $sizeGlx/2
-			    next
+
 			end
-        Curses.setpos(15, 30)
-        Curses.addstr("while true")
-			$glass = $tempGlass
+
 			#figure = randomFig(figureArr)
 		end
 end
+
+#TODO конец игры ревлизовать и ускорение игры (уровень сложности)
 
 def makeNewGlass(glass)
 	for y in 0...glass.size()
@@ -208,6 +219,14 @@ def makeNewGlass(glass)
 	return glass
 end
 
+def checkGameOver(glass)
+  for x in 0...glass[0].size()
+    if glass[0][x] == 1
+      return true
+    end
+  end
+  return false
+end
 
 
 def check0InY(glass)
@@ -237,7 +256,10 @@ def checkDownNumb(yInGlass, xInGlass, glass, figure)
 			end
 		end
 	end
+		Curses.setpos(35, 15)
+  	Curses.addstr("true CHDN")
 	return true
+
 end
 
 
@@ -371,7 +393,9 @@ def checkFreePlaceForFig(yInGlass, xInGlass, glass, figure)
 	for y in 0...figure.size()
 		for x in 0...figure[y].size()
 		    if(yInGlass+y < glass.size())
-				if(glass[yInGlass+y][xInGlass+x] == 1 and figure[y][x] == 1)
+				if(glass[yInGlass+y+1][xInGlass+x] == 1 and figure[y][x] == 1)
+					Curses.setpos(30, 15)
+          Curses.addstr("false")
 					return false
 				end
 		    end
@@ -380,6 +404,22 @@ def checkFreePlaceForFig(yInGlass, xInGlass, glass, figure)
 	return true
 end
 
+def checkFreePlaceForFigLise(yInGlass, xInGlass, glass, figure)
+	for y in 0...figure.size()
+		for x in 0...figure[y].size()
+		    if(yInGlass+y+1 < glass.size())
+				if(glass[yInGlass+y+1][xInGlass+x] == 1 and figure[y][x] == 1)
+					Curses.setpos(30, 15)
+          Curses.addstr("false")
+					return false
+				end
+		    end
+		end
+	end
+	return true
+end
+
+
 def rotationFigure(figure)
 	figureNew = (0..2).map{Array.new(3)}
 	#printFIgure(figureNew)
@@ -387,8 +427,6 @@ def rotationFigure(figure)
 	for y in 0...s
 		for x in 0...s
 			figureNew[x][s-y-1] = figure[y][x]
-      Curses.setpos(30, 30)
-      Curses.addstr("rotation done")
 		end
 	end
 	return figureNew
@@ -402,58 +440,36 @@ def printFIgure(fig)
   end
 end
 
-#glassArr = projectFigure(5,5,arrayGlass(10,10),figure)
-
-#print returnGlass(glassArr)
-
-#puts checkFreePlaceForFig(5,4,glassArr,figure)
-
-#TODO протестить в glass check функцию положить туда фигуру , установить ncurses
-
-
-#!/usr/bin/env rub
-#=begin
-#timeNow = Time.now.to_i
-
-#puts timeNow.round(5)/0.1
-
 #TODO как делать перевод из двоичной системы в десятичную и двоичная арифметика
+
 def sleepTime(secFloat)
   timeNow = Time.now.to_f
-  stdscr.nodelay = 1
+
   count = 0
   while (Time.now.to_f - (timeNow)).round(1) != secFloat
 
     case getch
     when ?A, ?a then
-      if checkOutOfGlassLeft($yStart, $xStart, $tempGlass, $figure)
+      if checkOutOfGlassLeft($yStart, $xStart, $glass, $figure)
         $xStart -= 1
-        outInCurses($tempGlass,$startGlassY ,$startGlassX)
-        projectFigure($xStart, $yStart, $glass, $figure)
-        Curses.setpos(35, 45)
-        Curses.addstr($xStart.to_s)
+        outInCurses(projectFigure($xStart,$yStart, copyGlass($glass), $figure),$startGlassY ,$startGlassX)
       end
     when ?D, ?d then
       if checkOutOfGlassRight($yStart, $xStart,$glass, $figure)
         $xStart += 1
-        outInCurses($tempGlass,$startGlassY ,$startGlassX)
-        projectFigure($xStart, $yStart, $glass, $figure)
-        Curses.setpos(40, 45)
-        Curses.addstr($xStart.to_s)
+        outInCurses(projectFigure($xStart,$yStart, copyGlass($glass), $figure),$startGlassY ,$startGlassX)
       end
 
     when ?E, ?e then
       temp =  rotationFigure($figure)
 
-      if checkOutOfGlassRightRotat($yStart, $xStart, $tempGlass, temp) && checkOutOfGlassLeftRotat($yStart, $xStart, $tempGlass, temp)
+      if checkOutOfGlassRightRotat($yStart, $xStart, $glass, temp) && checkOutOfGlassLeftRotat($yStart, $xStart, $tempGlass, temp)
         $figure = rotationFigure($figure)
-        outInCurses($glass,$startGlassY ,$startGlassX)
-        projectFigure($xStart, $yStart, $glass, $figure)
+	outInCurses(projectFigure($xStart,$yStart, copyGlass($glass), $figure),$startGlassY ,$startGlassX)
       end
-
-    when ?p, ?P then
-      sleep(5)
-  end
+     when ?S, ?s then
+        break
+     end
   end
 end
 
