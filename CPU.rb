@@ -175,10 +175,6 @@ def additionBin(bin1, bin2)
     return summ
 end
 
-
-
-
-
 def addition0(bin1, bin2)
     while bin1.size() != bin2.size()
         bin2 = "0" + bin2
@@ -199,7 +195,7 @@ def subBinNew(bin1, bin2)
         #puts bin2[i]
     end
     #puts bin2
-    temp = additionBin(bin2, addition0(bin2, "1"))#нужно добвать нули что бы слогаемые дылди одного размера лиюбо попрравить функ сложения, тчо бы она правильно скалыдвала числа с разщличным количеством
+    temp = additionBin(bin2, addition0(bin2, "1"))
     puts temp
     summ = additionBin(bin1, temp)
     if(summ.size() > bin1.size())
@@ -208,36 +204,96 @@ def subBinNew(bin1, bin2)
     return summ
 end
 
-puts subBinNew("111101101", "100100001")
+#puts subBinNew("111101101", "100100001")
 
 
 def subBin(bin1, bin2)
     summ = ""
+    borrow = 0
     for i in (bin1.size()-1).downto(0)
-        borrow = 0
-        y = i
-        while bin1[y] == "0"
-            y += 1
-            if bin1[y] == "0"
-                bin1[y] == "1"
-            else
-                borrow += bin1[y].to_i
-                bin1[y] == "1"
-            end
+        temp = (bin1[i].to_i - borrow) - bin2[i].to_i
+        if temp == 0 || temp == 1
+            #puts temp
+            summ = temp.to_s + summ
+            borrow = 0
+            #puts summ
+        else
+            #puts "---1"
+            borrow = 1
+    	    summ = "1" + summ
+
         end
-        temp = (bin1[i].to_i + borrow) - bin2[i].to_i
-        summ = (temp%2).to_s + summ
     end
     return summ
 end
-
-#puts subBin("110", "011")
+#puts  subBin("1101001", "0110001")
 
 #TODO функция вычитания двух бинарников други из друга только из бОльшего вычитаем меньшее
 
+#"575"
+#"997"
+
+def comparisDec(dec1, dec2)
+    if dec1.size < dec2.size
+	    dec1 = addition0(dec2, dec1)
+    elsif dec1.size > dec2.size
+	    dec2 = addition0(dec1, dec2)
+    end
+    for i in 0...(dec1.to_s).size()
+        if dec1[i].to_i < dec2[i].to_i
+            return -1
+        elsif dec1[i].to_i > dec2[i].to_i
+            return 1
+        end
+    end
+    return 0
+end
+
+
+#puts comparisDec("0050", "50")
+
+def separDivNum(dec1, dec2)
+    temp = ""
+    for i in 0...dec1.size
+        temp = temp + dec1[i]
+        if comparisDec(temp, dec2) == 1 || comparisDec(temp, dec2) == 0
+            return [temp, dec1.slice(i+1, dec1.size-1)]
+        end
+    end
+end
+
+#puts separDivNum("154", "10")
+
+
+def divDec(dec1, dec2)
+    num, remaind = separDivNum(dec1, dec2)#отделяем цифры пока первое не станет возможным поделить на второе
+    temp = (num.to_i/dec2.to_i).to_s#делим отделимый остаток на второе число
+    #puts temp
+    #puts remaind
+    rem2 = num.to_i%dec2.to_i#остаток от деления после отделения цифры и выполенния первого шага деления
+    while remaind != ""
+       # puts "test"
+        rem2 = rem2 + remaind[0].to_i#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
+        remaind = remaind.slice(1, remaind.size - 1)# остаток от делителя режем на 1 знак спереди (его забрали на сл цикл строкой выше)
+        temp = temp + (rem2/dec2.to_i).to_s
+    end
+    return temp
+    #TODO доделать деление десятичное, бинарное  сделать умножение и попробовать сделать бинарное деление)
+end
+
+puts divDec("1000","25")
+
+
+
+
 =begin
 
-
+35
+35  0 10
+ 5
+ --
+ 50
+  0
 
 
 01
