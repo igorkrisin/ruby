@@ -181,7 +181,7 @@ def addition0(bin1, bin2)
     end
     return bin2
 end
-#puts additionBin("0100", (addition0("0100", "1")))
+#puts additionBin("1010", "1010")
 #puts addition0("010101", "1")
 
 def subBinNew(bin1, bin2)
@@ -228,6 +228,8 @@ def subBin(bin1, bin2)
 end
 #puts  subBin("1101001", "0110001")
 
+
+
 #TODO функция вычитания двух бинарников други из друга только из бОльшего вычитаем меньшее
 
 #"575"
@@ -273,7 +275,7 @@ def divDec(dec1, dec2)
     rem2 = num.to_i%dec2.to_i#остаток от деления после отделения цифры и выполенния первого шага деления
     while remaind != ""
        # puts "test"
-        rem2 = rem2 + remaind[0].to_i#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
+        rem2 = (rem2.to_s + remaind[0]).to_i#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
         remaind = remaind.slice(1, remaind.size - 1)# остаток от делителя режем на 1 знак спереди (его забрали на сл цикл строкой выше)
         temp = temp + (rem2/dec2.to_i).to_s
     end
@@ -281,10 +283,50 @@ def divDec(dec1, dec2)
     #TODO доделать деление десятичное, бинарное  сделать умножение и попробовать сделать бинарное деление)
 end
 
-puts divDec("1000","25")
+#puts divDec("1000","25")
 
 
+def addQuantityZero(bin, quan)
+    for i in 0...quan
+        bin = bin + "0"
+    end
+    return bin
+end
 
+#puts addQuantityZero("111", 5)
+
+def convertTo16Bit(bin)
+    for i in 0...(16-bin.size)
+        bin = "0" + bin
+    end
+    return bin
+end
+
+#puts convertTo16Bit("111010")
+
+def multBin(bin1, bin2)
+    summ = []
+    bin1 = bin1.reverse
+    bin2 = bin2.reverse
+    for i in 0...bin2.size()
+        #print i
+        temp = ""
+        for y in 0...bin1.size()
+            temp = temp + ((bin1[y].to_i)*(bin2[i].to_i)).to_s
+        end
+        temp = addQuantityZero(temp, i)
+        temp = convertTo16Bit(temp)
+        summ.append(temp)
+    end
+    return summ
+end
+
+print multBin("101", "110")
+puts "mult: \n"
+
+puts additionBin(additionBin(multBin("101", "110")[0], multBin("101", "110")[1]), multBin("101", "110")[2])
+#нужно теперь добавить в функцию multBin логику складывания всех промежуточных итогов - сначала складывакем первый со вторым, потом второй с третьим
+# и так далее за счет цикла (пример без цикла в 327 сторке)
 
 =begin
 
