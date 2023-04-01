@@ -303,28 +303,44 @@ def convertTo16Bit(bin)
 end
 
 #puts convertTo16Bit("111010")
-
+#(4).downto(1)
 def multBin(bin1, bin2)
-    summ = []
+    summSubTotal = []
+    summ = ""
     bin1 = bin1.reverse
     bin2 = bin2.reverse
-    for i in 0...bin2.size()
-        #print i
+    for i in 0...bin1.size
+        #puts "i: #{i} "
         temp = ""
-        for y in 0...bin1.size()
-            temp = temp + ((bin1[y].to_i)*(bin2[i].to_i)).to_s
+        for y in 0...bin2.size
+            #puts "y: #{y} "
+            temp =  ((bin1[i].to_i)*(bin2[y].to_i)).to_s + temp
+            #puts temp
         end
+
         temp = addQuantityZero(temp, i)
         temp = convertTo16Bit(temp)
-        summ.append(temp)
+        #puts temp
+        summSubTotal.append(temp)
+    end
+    if summSubTotal.size == 1
+        return summSubTotal[0]
+    end
+    summ = additionBin(summSubTotal[0], summSubTotal[1])
+    if summSubTotal.size > 2
+        for i in 2...summSubTotal.size
+            summ = additionBin(summ, summSubTotal[i])
+        end
     end
     return summ
 end
 
-print multBin("101", "110")
-puts "mult: \n"
+print multBin("1011", "1101")
 
-puts additionBin(additionBin(multBin("101", "110")[0], multBin("101", "110")[1]), multBin("101", "110")[2])
+
+#puts "mult: \n"
+
+#puts additionBin(additionBin(multBin("101", "110")[0], multBin("101", "110")[1]), multBin("101", "110")[2])
 #нужно теперь добавить в функцию multBin логику складывания всех промежуточных итогов - сначала складывакем первый со вторым, потом второй с третьим
 # и так далее за счет цикла (пример без цикла в 327 сторке)
 
