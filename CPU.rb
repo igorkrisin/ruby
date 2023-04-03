@@ -270,20 +270,20 @@ end
 def divDec(dec1, dec2)
     num, remaind = separDivNum(dec1, dec2)#отделяем цифры пока первое не станет возможным поделить на второе
     temp = (num.to_i/dec2.to_i).to_s#делим отделимый остаток на второе число
-    #puts temp
-    #puts remaind
     rem2 = num.to_i%dec2.to_i#остаток от деления после отделения цифры и выполенния первого шага деления
     while remaind != ""
-       # puts "test"
         rem2 = (rem2.to_s + remaind[0]).to_i#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
         remaind = remaind.slice(1, remaind.size - 1)# остаток от делителя режем на 1 знак спереди (его забрали на сл цикл строкой выше)
-        temp = temp + (rem2/dec2.to_i).to_s
+       #rem2, remaind = separDivNum((rem2.to_s + remaind), dec2)
+        print "rem2: #{rem2}\n"
+        temp = temp + (rem2.to_i/dec2.to_i).to_s
+        rem2 = rem2.to_i%dec2.to_i
     end
-    return temp
-    #TODO доделать деление десятичное, бинарное  сделать умножение и попробовать сделать бинарное деление)
+    return [temp, rem2]
+    #TODO воспользоваться sepDivNum для того что бы количество цифр в делителе 278 строки было больше делителя
 end
 
-#puts divDec("1000","25")
+print divDec("23921","238")
 
 
 def addQuantityZero(bin, quan)
@@ -303,7 +303,7 @@ def convertTo16Bit(bin)
 end
 
 #puts convertTo16Bit("111010")
-#(4).downto(1)
+
 def multBin(bin1, bin2)
     summSubTotal = []
     summ = ""
@@ -335,14 +335,89 @@ def multBin(bin1, bin2)
     return summ
 end
 
-print multBin("1011", "1101")
+#print multBin("1011", "1101")
 
 
-#puts "mult: \n"
+def comparisBin(bin1, bin2)
+    if bin1.size < bin2.size
+	    bin1 = addition0(bin2, bin1)
+    elsif bin1.size > bin2.size
+	    bin2 = addition0(bin1, bin2)
+    end                                 #Нужен этот кусок кода? или у нас всегда 16 бит будет? Или бросить тут исключение?
 
-#puts additionBin(additionBin(multBin("101", "110")[0], multBin("101", "110")[1]), multBin("101", "110")[2])
-#нужно теперь добавить в функцию multBin логику складывания всех промежуточных итогов - сначала складывакем первый со вторым, потом второй с третьим
-# и так далее за счет цикла (пример без цикла в 327 сторке)
+    for i in 0...(bin1.to_s).size()
+        if bin1[i].to_i < bin2[i].to_i
+            return -1
+        elsif bin1[i].to_i > bin2[i].to_i
+            return 1
+        end
+    end
+    return 0
+end
+
+#puts comparisBin("111111", "111101")
+
+def separBin(bin1, bin2)
+    temp = ""
+    for i in 0...bin1.size
+        temp = temp + bin1[i]
+        if comparisDec(temp, bin2) == 1 || comparisDec(temp, bin2) == 0
+            return [temp, bin1.slice(i+1, bin1.size-1)]
+        end
+    end
+end
+
+#print separBin("11111", "11")
+
+def divBin(bin1, bin2)
+    num, remaind = separDivNum(dec1, dec2)#отделяем цифры пока первое не станет возможным поделить на второе
+    temp = subBin(remaind, bin2)
+
+end
+
+def separWordField(word)
+    adressField = word.slice(6, 10)
+    adressModeField = word.slice(4, 2)
+    operationField = word.slice(0,4)
+
+    return [operationField, adressModeField, adressField]
+end
+
+#print separWordField("0123456789abcdef")
+
+def memArray()
+    mem = []
+    for i in 0..1024
+	mem.append(convertTo16Bit("0"))
+    end
+    return mem
+end
+
+#print memArray
+
+def mainLoop()
+    ir = 0
+    ac = "0000000000000000"
+    memory = memArray
+    operatField, adressModeField, adressField = separWordField(memory[ir])
+
+    case operationField
+	when "0000"
+	when "0001"
+	when "0010"
+	when "0011"
+	when "0100"
+	when "0101"
+	when "0110"
+	when "0111" then raise "BRLT (0111) command is not supported"
+	when "1000"
+	when "1001"
+	when "1010"
+	when "1011"
+    end
+
+
+end
 
 =begin
 
