@@ -224,6 +224,7 @@ def subBin(bin1, bin2)
 
         end
     end
+
     return summ
 end
 #puts  subBin("1101001", "0110001")
@@ -277,13 +278,13 @@ def divDec(dec1, dec2)
        #rem2, remaind = separDivNum((rem2.to_s + remaind), dec2)
         print "rem2: #{rem2}\n"
         temp = temp + (rem2.to_i/dec2.to_i).to_s
-        rem2 = rem2.to_i%dec2.to_i
+        rem2 = (rem2.to_i%dec2.to_i).to_s
     end
     return [temp, rem2]
     #TODO воспользоваться sepDivNum для того что бы количество цифр в делителе 278 строки было больше делителя
 end
 
-print divDec("23921","238")
+#print divDec("239212","238")
 
 
 def addQuantityZero(bin, quan)
@@ -369,13 +370,56 @@ end
 
 #print separBin("11111", "11")
 
-def divBin(bin1, bin2)
-    num, remaind = separDivNum(dec1, dec2)#отделяем цифры пока первое не станет возможным поделить на второе
-    temp = subBin(remaind, bin2)
+def removeZero(bin)
+    temp = ""
+    for i in 0...bin.size
+        if bin[i] == "1"
+            temp = bin.slice(i, bin.size-1)
+            return temp
+        elsif i == bin.size-1  && bin[i] == "0"
+            return "0"
+        end
+    end
 
 end
 
-def separWordField(word)
+#print removeZero("000000001001001")
+
+def divBin(bin1, bin2)
+    num, remaind = separDivNum(bin1 , bin2)#отделяем цифры пока первое не станет возможным поделить на второе
+    print "remaind: #{remaind}\n"
+    print "num: #{num}\n"
+    print "subBin(num, bin2): #{removeZero(subBin(num, bin2))}\n"
+    if removeZero(subBin(num, bin2)) == "0"
+        print "test \n"
+        temp = "1"
+    else
+        temp = removeZero(subBin(num, bin2))
+    end
+    print "temp: #{temp}\n"
+    rem2 = removeZero(subBin(num, bin2))#остаток от деления после отделения цифры и выполенния первого шага деления
+    print "removeZero(subBin(num, bin2)): #{removeZero(subBin(num, bin2))}\n"
+    while remaind != ""
+        rem2 = (rem2.to_s + remaind[0])#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
+        remaind = remaind.slice(1, remaind.size - 1)# остаток от делителя режем на 1 знак спереди (его забрали на сл цикл строкой выше)
+       #rem2, remaind = separDivNum((rem2.to_s + remaind), bin2)
+        print "rem2: #{rem2}\n"
+        temp =  (subBin(rem2, bin2)) + temp
+        print "temp-: #{temp}\n"
+        if removeZero(subBin(rem2, bin2)) == "0"
+            print "test2 \n"
+            rem2 = "1"
+        else
+            rem2 = removeZero(subBin(rem2, bin2))
+        end
+    end
+    return [temp, rem2]
+
+end
+
+print divBin("1111111", "11")
+
+def separWordField(word)#разделение полей процессора
     adressField = word.slice(6, 10)
     adressModeField = word.slice(4, 2)
     operationField = word.slice(0,4)
@@ -396,28 +440,42 @@ end
 #print memArray
 
 def mainLoop()
-    ir = 0
+
+    pc = 0
     ac = "0000000000000000"
     memory = memArray
-    operatField, adressModeField, adressField = separWordField(memory[ir])
-
-    case operationField
-	when "0000"
-	when "0001"
-	when "0010"
-	when "0011"
-	when "0100"
-	when "0101"
-	when "0110"
-	when "0111" then raise "BRLT (0111) command is not supported"
-	when "1000"
-	when "1001"
-	when "1010"
-	when "1011"
+    memory[0] = "0001" + "00" + "0000000011"
+    memory[3] = convertTo16Bit(convertDecToBin(123))
+    memory[4] = convertTo16Bit(convertDecToBin(231))
+    memory[1] = "1000" + "00" + "0000000100"
+    while true
+	ir = memory[pc]
+	operatField, adressModeField, adressField = separWordField(ir)
+	case operatField
+	    when "0000" then break
+	    when "0001" then ac = memory[convertBinToDec(adressField)]
+	    pc+=1
+	    when "0010" then memory[convertBinToDec(adressField)] = ac
+	    pc+=1
+	    when "0011"	then raise "CALL command is not supported"
+	    when "0100" then raise "BR command is not supported"
+	    when "0101" then raise "BREQ command is not supported"
+	    when "0110" then raise "BRGE command is not supported"
+	    when "0111" then raise "BRLT (0111) command is not supported"
+	    when "1000" then ac = additionBin(ac, memory[convertBinToDec(adressField)])
+	    pc+=1
+	    when "1001" then ac = subBin(ac, memory[convertBinToDec(adressField)])
+	    pc+=1
+	    when "1010" then ac = multBin(ac, memory[convertBinToDec(adressField)])
+	    pc+=1
+    	    when "1011" then raise "DIV command is not supported"
+    	    else  raise "#{operatField} command is not supported"
+	end
     end
-
-
+    print convertBinToDec(ac)
 end
+
+#mainLoop()
 
 =begin
 
