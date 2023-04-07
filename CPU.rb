@@ -223,17 +223,15 @@ def subBin(bin1, bin2)
     for i in (bin1.size()-1).downto(0)
         temp = (bin1[i].to_i - borrow) - bin2[i].to_i
         if temp == 0 || temp == 1
-            print "temp: #{temp}\n"
+            #print "temp: #{temp}\n"
             summ = temp.to_s + summ
             borrow = 0
-            print "summ if: #{summ}\n"
-
+            #print "summ if: #{summ}\n"
         elsif temp == -1 && borrow == 0
-            print "summ before: #{summ}\n"
+            #print "summ before: #{summ}\n"
             borrow = 1
     	    summ = "1" + summ
-            print "summ after: #{summ}\n"
-
+            #print "summ after: #{summ}\n"
         else
             summ = (bin1[i].to_i+borrow - bin2[i].to_i).to_s + summ
         end
@@ -241,7 +239,7 @@ def subBin(bin1, bin2)
 
     return  summ
 end
-puts  subBin("11111", "010")
+#puts  subBin("11111", "010")
 
 
 
@@ -422,7 +420,13 @@ def divBin(bin1, bin2)
 
         while comparisBin(rem2, bin2) == -1
             #print "test2 \n"
+            if remaind == ""
+                remaind = remaind.slice(1, remaind.size - 1)
+                rem2 = removeZero(rem2)
+                temp = temp + "0"
+                return  [temp, rem2]
 
+            end
             rem2 = (removeZero(rem2) + remaind[0])#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
             remaind = remaind.slice(1, remaind.size - 1)
             temp = temp + "0"
@@ -454,8 +458,8 @@ def divBin(bin1, bin2)
 end
 
 #print comparisBin("00", "11")
-#print subBin("100", "011")
-#print divBin("1001", "11")
+#print subBin("100", "11")
+print divBin("10011101", "10")
 #print removeZero("1")
 
 
