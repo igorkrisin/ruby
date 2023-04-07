@@ -184,8 +184,16 @@ end
 #puts additionBin("1010", "1010")
 #puts addition0("010101", "1")
 
-def subBinNew(bin1, bin2)
+def convertTo16Bit(bin)
+    for i in 0...(16-bin.size)
+        bin = "0" + bin
+    end
+    return bin
+end
 
+def subBinNew(bin1, bin2)
+    bin1 = convertTo16Bit(bin1)
+    bin2 = convertTo16Bit(bin2)
     for i in 0...bin2.size()
         if bin2[i] == "0"
             bin2[i] = "1"
@@ -196,7 +204,7 @@ def subBinNew(bin1, bin2)
     end
     #puts bin2
     temp = additionBin(bin2, addition0(bin2, "1"))
-    puts temp
+    #puts temp
     summ = additionBin(bin1, temp)
     if(summ.size() > bin1.size())
         summ[0] = ""
@@ -204,30 +212,36 @@ def subBinNew(bin1, bin2)
     return summ
 end
 
-#puts subBinNew("111101101", "100100001")
+#puts subBinNew("100", "11")
 
 
 def subBin(bin1, bin2)
+    bin1 = convertTo16Bit(bin1)
+    bin2 = convertTo16Bit(bin2)
     summ = ""
     borrow = 0
     for i in (bin1.size()-1).downto(0)
         temp = (bin1[i].to_i - borrow) - bin2[i].to_i
         if temp == 0 || temp == 1
-            #puts temp
+            print "temp: #{temp}\n"
             summ = temp.to_s + summ
             borrow = 0
-            #puts summ
-        else
-            #puts "---1"
+            print "summ if: #{summ}\n"
+
+        elsif temp == -1 && borrow == 0
+            print "summ before: #{summ}\n"
             borrow = 1
     	    summ = "1" + summ
+            print "summ after: #{summ}\n"
 
+        else
+            summ = (bin1[i].to_i+borrow - bin2[i].to_i).to_s + summ
         end
     end
 
-    return summ
+    return  summ
 end
-#puts  subBin("1101001", "0110001")
+puts  subBin("11111", "010")
 
 
 
@@ -273,6 +287,7 @@ def divDec(dec1, dec2)
     temp = (num.to_i/dec2.to_i).to_s#делим отделимый остаток на второе число
     rem2 = num.to_i%dec2.to_i#остаток от деления после отделения цифры и выполенния первого шага деления
     while remaind != ""
+
         rem2 = (rem2.to_s + remaind[0]).to_i#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
         remaind = remaind.slice(1, remaind.size - 1)# остаток от делителя режем на 1 знак спереди (его забрали на сл цикл строкой выше)
        #rem2, remaind = separDivNum((rem2.to_s + remaind), dec2)
@@ -296,12 +311,7 @@ end
 
 #puts addQuantityZero("111", 5)
 
-def convertTo16Bit(bin)
-    for i in 0...(16-bin.size)
-        bin = "0" + bin
-    end
-    return bin
-end
+
 
 #puts convertTo16Bit("111010")
 
@@ -373,7 +383,9 @@ end
 def removeZero(bin)
     temp = ""
     for i in 0...bin.size
-        if bin[i] == "1"
+        if  bin[i] == "1" && i == bin.size-1
+            return "1"
+        elsif bin[i] == "1"
             temp = bin.slice(i, bin.size-1)
             return temp
         elsif i == bin.size-1  && bin[i] == "0"
@@ -389,35 +401,64 @@ def divBin(bin1, bin2)
     num, remaind = separDivNum(bin1 , bin2)#отделяем цифры пока первое не станет возможным поделить на второе
     print "remaind: #{remaind}\n"
     print "num: #{num}\n"
-    print "subBin(num, bin2): #{removeZero(subBin(num, bin2))}\n"
+    print "subBin(num, bin2): #{removeZero(subBin(num,  bin2))}\n"
     if removeZero(subBin(num, bin2)) == "0"
-        print "test \n"
+       # print "test \n"
         temp = "1"
     else
         temp = removeZero(subBin(num, bin2))
     end
     print "temp: #{temp}\n"
+
     rem2 = removeZero(subBin(num, bin2))#остаток от деления после отделения цифры и выполенния первого шага деления
-    print "removeZero(subBin(num, bin2)): #{removeZero(subBin(num, bin2))}\n"
+    print "rem2: #{rem2}\n"
+    #print "removeZero(subBin(num, bin2)): #{removeZero(subBin(num, bin2))}\n"
     while remaind != ""
-        rem2 = (rem2.to_s + remaind[0])#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
+        #rem2 = (rem2 + remaind[0])#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
+        rem2 = (removeZero(rem2) + remaind[0])
+        print "rem2_-_: #{rem2}\n"
+        print "temp_-_: #{temp}\n"
         remaind = remaind.slice(1, remaind.size - 1)# остаток от делителя режем на 1 знак спереди (его забрали на сл цикл строкой выше)
+
+        while comparisBin(rem2, bin2) == -1
+            #print "test2 \n"
+
+            rem2 = (removeZero(rem2) + remaind[0])#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
+            remaind = remaind.slice(1, remaind.size - 1)
+            temp = temp + "0"
+    print "temp-: #{temp}\n"
+            print "rem2-: #{rem2}\n"
+        end
+
+
        #rem2, remaind = separDivNum((rem2.to_s + remaind), bin2)
-        print "rem2: #{rem2}\n"
-        temp =  (subBin(rem2, bin2)) + temp
-        print "temp-: #{temp}\n"
+        #print "rem2: #{rem2}\n"
+
+        #print "temp-: #{temp}\n"
+        #print "removeZero(subBin(rem2, bin2)): #{removeZero(subBin(rem2, bin2))}\n"
         if removeZero(subBin(rem2, bin2)) == "0"
-            print "test2 \n"
-            rem2 = "1"
+
+           print "rem2__: #{rem2}\n"
+            rem2 = "0"
+            temp =  temp + "1"
+            print "temp__: #{temp}\n"
+
         else
             rem2 = removeZero(subBin(rem2, bin2))
+            print "rem__: #{rem2}\n"
+            temp =  temp + rem2
         end
     end
     return [temp, rem2]
 
 end
 
-print divBin("1111111", "11")
+#print comparisBin("00", "11")
+#print subBin("100", "011")
+#print divBin("1001", "11")
+#print removeZero("1")
+
+
 
 def separWordField(word)#разделение полей процессора
     adressField = word.slice(6, 10)
