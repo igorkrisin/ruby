@@ -397,25 +397,24 @@ end
 
 def divBin(bin1, bin2)
     num, remaind = separDivNum(bin1 , bin2)#отделяем цифры пока первое не станет возможным поделить на второе
-    print "remaind: #{remaind}\n"
-    print "num: #{num}\n"
-    print "subBin(num, bin2): #{removeZero(subBin(num,  bin2))}\n"
+    #print "remaind: #{remaind}\n"
+    #print "num: #{num}\n"
+    #print "subBin(num, bin2): #{removeZero(subBin(num,  bin2))}\n"
     if removeZero(subBin(num, bin2)) == "0"
        # print "test \n"
         temp = "1"
     else
         temp = removeZero(subBin(num, bin2))
     end
-    print "temp: #{temp}\n"
-
+    #print "temp: #{temp}\n"
     rem2 = removeZero(subBin(num, bin2))#остаток от деления после отделения цифры и выполенния первого шага деления
-    print "rem2: #{rem2}\n"
+    #print "rem2: #{rem2}\n"
     #print "removeZero(subBin(num, bin2)): #{removeZero(subBin(num, bin2))}\n"
     while remaind != ""
         #rem2 = (rem2 + remaind[0])#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
         rem2 = (removeZero(rem2) + remaind[0])
-        print "rem2_-_: #{rem2}\n"
-        print "temp_-_: #{temp}\n"
+        #print "rem2_-_: #{rem2}\n"
+        #print "temp_-_: #{temp}\n"
         remaind = remaind.slice(1, remaind.size - 1)# остаток от делителя режем на 1 знак спереди (его забрали на сл цикл строкой выше)
 
         while comparisBin(rem2, bin2) == -1
@@ -425,41 +424,30 @@ def divBin(bin1, bin2)
                 rem2 = removeZero(rem2)
                 temp = temp + "0"
                 return  [temp, rem2]
-
             end
             rem2 = (removeZero(rem2) + remaind[0])#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
             remaind = remaind.slice(1, remaind.size - 1)
             temp = temp + "0"
-    print "temp-: #{temp}\n"
-            print "rem2-: #{rem2}\n"
+            #print "temp-: #{temp}\n"
+            #print "rem2-: #{rem2}\n"
         end
-
-
-       #rem2, remaind = separDivNum((rem2.to_s + remaind), bin2)
-        #print "rem2: #{rem2}\n"
-
-        #print "temp-: #{temp}\n"
-        #print "removeZero(subBin(rem2, bin2)): #{removeZero(subBin(rem2, bin2))}\n"
         if removeZero(subBin(rem2, bin2)) == "0"
-
-           print "rem2__: #{rem2}\n"
+           #print "rem2__: #{rem2}\n"
             rem2 = "0"
             temp =  temp + "1"
-            print "temp__: #{temp}\n"
-
+            #print "temp__: #{temp}\n"
         else
             rem2 = removeZero(subBin(rem2, bin2))
-            print "rem__: #{rem2}\n"
+            #print "rem__: #{rem2}\n"
             temp =  temp + rem2
         end
     end
     return [temp, rem2]
-
 end
 
 #print comparisBin("00", "11")
 #print subBin("100", "11")
-print divBin("10011101", "10")
+#print divBin("10011101", "10")
 #print removeZero("1")
 
 
@@ -482,45 +470,62 @@ def memArray()
     return mem
 end
 
-#print memArray
 
+
+#print memArray
+# arr[i]
+# arr+i
 def mainLoop()
 
     pc = 0
+    xr = "0000000000000000"
     ac = "0000000000000000"
     memory = memArray
-    memory[0] = "0001" + "00" + "0000000011"
-    memory[3] = convertTo16Bit(convertDecToBin(123))
-    memory[4] = convertTo16Bit(convertDecToBin(231))
+    memory[0] = "0001" + "11" + "0000000011"
     memory[1] = "1000" + "00" + "0000000100"
+    memory[3] = convertTo16Bit(convertDecToBin(4))
+    memory[4] = convertTo16Bit(convertDecToBin(231))
+    
     while true
 	ir = memory[pc]
 	operatField, adressModeField, adressField = separWordField(ir)
+	
+	case adressModeField
+	    when "00" then callMemory = memory[convertBinToDec(adressField)]		#direct mode
+	    when "01" then callMemory = convertTo16Bit(adressField)			#immediate mode
+	    when "10" then callMemory = memory[convertBinToDec(adressField) + ir]	#indexed mode есть ворпосы как загрузить значение в XR TODO поискать в книжке данную информацию
+	    when "11" then callMemory = memory[convertBinToDec(adressField)] 
+	    if convertBinToDec(callMemory) > 1024
+		raise "out of range index memory, inderect mode"
+	    end 
+	    callMemory = memory[convertBinToDec(callMemory)]	#indirect mode
+	end
 	case operatField
 	    when "0000" then break
-	    when "0001" then ac = memory[convertBinToDec(adressField)]
+	    when "0001" then ac = callMemory
 	    pc+=1
-	    when "0010" then memory[convertBinToDec(adressField)] = ac
+	    when "0010" then memory[convertBinToDec(adressField)] = ac#пока не понятно?
 	    pc+=1
 	    when "0011"	then raise "CALL command is not supported"
 	    when "0100" then raise "BR command is not supported"
 	    when "0101" then raise "BREQ command is not supported"
 	    when "0110" then raise "BRGE command is not supported"
 	    when "0111" then raise "BRLT (0111) command is not supported"
-	    when "1000" then ac = additionBin(ac, memory[convertBinToDec(adressField)])
+	    when "1000" then ac = additionBin(ac, callMemory)
 	    pc+=1
-	    when "1001" then ac = subBin(ac, memory[convertBinToDec(adressField)])
+	    when "1001" then ac = subBin(ac, callMemory)
 	    pc+=1
-	    when "1010" then ac = multBin(ac, memory[convertBinToDec(adressField)])
+	    when "1010" then ac = multBin(ac, callMemory)
 	    pc+=1
-    	    when "1011" then raise "DIV command is not supported"
-    	    else  raise "#{operatField} command is not supported"
+    	    when "1011" then ac = divBin(ac, callMemory)
+	    pc+=1
+        else  raise "#{operatField} command is not supported"
 	end
     end
     print convertBinToDec(ac)
 end
 
-#mainLoop()
+mainLoop()
 
 =begin
 
@@ -559,3 +564,5 @@ end
    convertToBin(42) -> "010101"
 
 =end
+#Use this token to access the HTTP API:
+#6033655353:AAEPOIiUOp4caU6UbdxtVHwXo6Xp1fi7lLU
