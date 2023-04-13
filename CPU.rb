@@ -471,60 +471,105 @@ def memArray()
 end
 
 
+=begin
+File.readlines('testing').each do |line|
+
+    if line.size-1 == 10 && count == 0
+        puts "load adress: #{line}"
+        count += 1
+    elsif line.size-1 == 10 && count == 1
+        puts "quantity commands: #{line}"
+        count = 0
+    else
+        puts "commands: #{line}"
+    end
+
+end
+=end
 
 #print memArray
 # arr[i]
 # arr+i
 def mainLoop()
 
+    count = 0
     pc = 0
     xr = "0000000000000000"
     ac = "0000000000000000"
     memory = memArray
+    memAdress = ""
+    qyanAd = 0
     memory[0] = "0001" + "11" + "0000000011"
     memory[1] = "1000" + "00" + "0000000100"
     memory[3] = convertTo16Bit(convertDecToBin(4))
-    memory[4] = convertTo16Bit(convertDecToBin(231))
+    memory[4] = convertTo16Bit(convertDecToBin(231)) // TODO cравнить результат данного выражения перенеся его в файл для считывания
     
+    #File.readlines('testing').each do |line|#TODO проверить файл с командами на ошибки, если есть ошибка, то RAISE
+    #    if line.size-1 == 10 && count == 0
+            #puts "load adress: #{line}"
+    #        memAdress = line.to_s #адрес в памяти куда сложить команду
+    #        count += 1
+    #    elsif line.size-1 == 10 && count == 1
+            #puts "quantity commands: #{line}"
+    #        qyanAd = line
+    #        count = 0
+    #    else
+            #puts "commands: #{line}" #line -это команда которую выполняем в из файла по адресу memAdress
+    #    memory[convertBinToDec(memAdress)] = line.to_s.strip
+    #    memAdress = additionBin(memAdress, addition0(memAdress, "1"))
+    #    end
+        
+    #end
+    
+    #print memory
     while true
 	ir = memory[pc]
 	operatField, adressModeField, adressField = separWordField(ir)
 	
 	case adressModeField
-	    when "00" then callMemory = memory[convertBinToDec(adressField)]		#direct mode
-	    when "01" then callMemory = convertTo16Bit(adressField)			#immediate mode
-	    when "10" then callMemory = memory[convertBinToDec(adressField) + ir]	#indexed mode есть ворпосы как загрузить значение в XR TODO поискать в книжке данную информацию
-	    when "11" then callMemory = memory[convertBinToDec(adressField)] 
-	    if convertBinToDec(callMemory) > 1024
-		raise "out of range index memory, inderect mode"
-	    end 
-	    callMemory = memory[convertBinToDec(callMemory)]	#indirect mode
+	    when "00"
+	     mar = adressField
+	      #callMemory = memory[convertBinToDec(mar)]			#direct mode
+	    when "01"
+	    mar = adressField
+	     #callMemory = convertTo16Bit(adressField)			#immediate mode
+	    when "10"
+	     mar = adressField
+	      mar = mar + xr
+	     # callMemory = memory[convertBinToDec(mar)]	#indexed mode есть ворпосы как загрузить значение в XR TODO поискать в книжке данную информацию
+	    when "11"
+	     mar = adressField
+	     callMemory = memory[convertToDec(mar)]
+	    
+	    mar = convertTo16Bit(callMemory.slice(5,10))							#indirect mode
 	end
 	case operatField
 	    when "0000" then break
-	    when "0001" then ac = callMemory
+	    when "0001" then callMemory = memory[convertTo16BitToDec(mar)];ac = callMemory #TODO заменить имя переменной  callMemory  на mbr
 	    pc+=1
-	    when "0010" then memory[convertBinToDec(adressField)] = ac#пока не понятно?
+	    when "0010" then callMemory = memory[convertTo16BitToDec(mar)];memory[convertBinToDec(mar)] = ac
 	    pc+=1
 	    when "0011"	then raise "CALL command is not supported"
-	    when "0100" then raise "BR command is not supported"
-	    when "0101" then raise "BREQ command is not supported"
-	    when "0110" then raise "BRGE command is not supported"
+	    when "0100" then pc = mar
+	    when "0101" 
+		if(comparisBin(ac, "0") == 0)
+		    pc = mar
+	    when "0110" then raise "BRGE (0110) command is not supported"
 	    when "0111" then raise "BRLT (0111) command is not supported"
-	    when "1000" then ac = additionBin(ac, callMemory)
+	    when "1000" then callMemory = memory[convertTo16BitToDec(mar)];ac = additionBin(ac, callMemory)
 	    pc+=1
-	    when "1001" then ac = subBin(ac, callMemory)
+	    when "1001" then callMemory = memory[convertTo16BitToDec(mar)];ac = subBin(ac, callMemory)
 	    pc+=1
-	    when "1010" then ac = multBin(ac, callMemory)
+	    when "1010" then callMemory = memory[convertTo16BitToDec(mar)];ac = multBin(ac, callMemory)
 	    pc+=1
-    	    when "1011" then ac = divBin(ac, callMemory)
+    	    when "1011" then callMemory = memory[convertTo16BitToDec(mar)];ac = divBin(ac, callMemory)
 	    pc+=1
         else  raise "#{operatField} command is not supported"
 	end
-    end
+end
     print convertBinToDec(ac)
 end
-
+#print memArray[convertBinToDec("00000000000000000")]
 mainLoop()
 
 =begin
