@@ -15,7 +15,7 @@ end
 #puts convertDecToBin(458)
 
 
-def convertBinToDec(bin)
+def convertBinToInt(bin)
     summ = 0
     bin = bin.reverse
     for n in 0...bin.size()
@@ -26,7 +26,7 @@ def convertBinToDec(bin)
     return summ
 end
 
-#puts convertBinToDec("111001010")
+#puts convertBinToInt("111001010")
 
 def convertBinToHex(bin)
     summ = ""
@@ -181,6 +181,15 @@ def addition0(bin1, bin2)
     end
     return bin2
 end
+
+def addition0Param(quantity, bin2)
+    while quantity != bin2.size()
+        bin2 = "0" + bin2
+    end
+    return bin2
+end
+
+#print addition0Param(10, "01010")
 #puts additionBin("1010", "1010")
 #puts addition0("010101", "1")
 
@@ -243,7 +252,6 @@ end
 
 
 
-#TODO функция вычитания двух бинарников други из друга только из бОльшего вычитаем меньшее
 
 #"575"
 #"997"
@@ -294,7 +302,6 @@ def divDec(dec1, dec2)
         rem2 = (rem2.to_i%dec2.to_i).to_s
     end
     return [temp, rem2]
-    #TODO воспользоваться sepDivNum для того что бы количество цифр в делителе 278 строки было больше делителя
 end
 
 #print divDec("239212","238")
@@ -470,107 +477,172 @@ def memArray()
     return mem
 end
 
-
-=begin
-File.readlines('testing').each do |line|
-
-    if line.size-1 == 10 && count == 0
-        puts "load adress: #{line}"
-        count += 1
-    elsif line.size-1 == 10 && count == 1
-        puts "quantity commands: #{line}"
-        count = 0
-    else
-        puts "commands: #{line}"
+def check1or0(line)
+    for i in 0...line.size-1
+        if line[i] != "1" && line[i] != "0"
+            raise "ERROR in command file, it's can consist only 0 or 1. Your adress value:  #{line[i]}"
+        end
     end
-
 end
-=end
+
+def fileRead(nameFile,memory, memAdress, qyanAd)
+    count = 0
+    File.readlines(nameFile).each do |line|
+
+        if line.size-1 == 10 && count == 0
+            check1or0(line)
+            #puts "load adress: #{line}"
+            memAdress = line.to_s #адрес в памяти куда сложить команду
+            count += 1
+        elsif line.size-1 == 10 && count == 1
+            check1or0(line)
+            #puts "quantity commands: #{line}"
+            qyanAd = line
+            count = 0
+        else
+            check1or0(line)
+            if line.strip.size != 16
+                raise "ERROR in command file, size command line can be only 16 piece. Your value: #{line.size}"
+            end
+             #puts "commands: #{line}" #line -это команда которую выполняем в из файла по адресу memAdress
+            memory[convertBinToInt(memAdress)] = line.to_s.strip
+            memAdress = additionBin(memAdress, addition0(memAdress, "1"))
+        end
+
+     end
+end
 
 #print memArray
 # arr[i]
 # arr+i
 def mainLoop()
 
-    count = 0
+
     pc = 0
     xr = "0000000000000000"
     ac = "0000000000000000"
     memory = memArray
     memAdress = ""
     qyanAd = 0
-    memory[0] = "0001" + "11" + "0000000011"
-    memory[1] = "1000" + "00" + "0000000100"
+    #memory[0] = "0001" + "11" + "0000000011"
+    #memory[1] = "1000" + "00" + "0000000100"
+    #memory[3] = convertTo16Bit(convertDecToBin(4))
+    #memory[4] = convertTo16Bit(convertDecToBin(231))
+    memory[0] = assembler("LOAD @3")
+    memory[1] = assembler("ADD 4")
+    #memory[2] = assembler("HALT") 
     memory[3] = convertTo16Bit(convertDecToBin(4))
-    memory[4] = convertTo16Bit(convertDecToBin(231)) // TODO cравнить результат данного выражения перенеся его в файл для считывания
+    memory[4] = convertTo16Bit(convertDecToBin(231))
     
-    #File.readlines('testing').each do |line|#TODO проверить файл с командами на ошибки, если есть ошибка, то RAISE
-    #    if line.size-1 == 10 && count == 0
-            #puts "load adress: #{line}"
-    #        memAdress = line.to_s #адрес в памяти куда сложить команду
-    #        count += 1
-    #    elsif line.size-1 == 10 && count == 1
-            #puts "quantity commands: #{line}"
-    #        qyanAd = line
-    #        count = 0
-    #    else
-            #puts "commands: #{line}" #line -это команда которую выполняем в из файла по адресу memAdress
-    #    memory[convertBinToDec(memAdress)] = line.to_s.strip
-    #    memAdress = additionBin(memAdress, addition0(memAdress, "1"))
-    #    end
-        
-    #end
-    
-    #print memory
+    fileRead('testing', memory, memAdress, qyanAd)
     while true
 	ir = memory[pc]
 	operatField, adressModeField, adressField = separWordField(ir)
-	
+
 	case adressModeField
 	    when "00"
 	     mar = adressField
-	      #callMemory = memory[convertBinToDec(mar)]			#direct mode
 	    when "01"
 	    mar = adressField
-	     #callMemory = convertTo16Bit(adressField)			#immediate mode
 	    when "10"
 	     mar = adressField
 	      mar = mar + xr
-	     # callMemory = memory[convertBinToDec(mar)]	#indexed mode есть ворпосы как загрузить значение в XR TODO поискать в книжке данную информацию
 	    when "11"
 	     mar = adressField
-	     callMemory = memory[convertToDec(mar)]
-	    
-	    mar = convertTo16Bit(callMemory.slice(5,10))							#indirect mode
+	     mbr = memory[convertBinToInt(mar)]
+	     mar = convertTo16Bit(mbr.slice(5,11))							#indirect mode
 	end
 	case operatField
 	    when "0000" then break
-	    when "0001" then callMemory = memory[convertTo16BitToDec(mar)];ac = callMemory #TODO заменить имя переменной  callMemory  на mbr
-	    pc+=1
-	    when "0010" then callMemory = memory[convertTo16BitToDec(mar)];memory[convertBinToDec(mar)] = ac
+	    when "0001"
+            p "memory[convertBinToInt(mar)]: #{memory[convertBinToInt(mar)]}"
+            mbr = memory[convertBinToInt(mar)];ac = mbr
+            pc+=1
+	    when "0010" then mbr = memory[convertBinToInt(mar)];memory[convertBinToInt(mar)] = ac
 	    pc+=1
 	    when "0011"	then raise "CALL command is not supported"
 	    when "0100" then pc = mar
-	    when "0101" 
+	    when "0101"
 		if(comparisBin(ac, "0") == 0)
 		    pc = mar
+        end
 	    when "0110" then raise "BRGE (0110) command is not supported"
 	    when "0111" then raise "BRLT (0111) command is not supported"
-	    when "1000" then callMemory = memory[convertTo16BitToDec(mar)];ac = additionBin(ac, callMemory)
-	    pc+=1
-	    when "1001" then callMemory = memory[convertTo16BitToDec(mar)];ac = subBin(ac, callMemory)
-	    pc+=1
-	    when "1010" then callMemory = memory[convertTo16BitToDec(mar)];ac = multBin(ac, callMemory)
-	    pc+=1
-    	    when "1011" then callMemory = memory[convertTo16BitToDec(mar)];ac = divBin(ac, callMemory)
-	    pc+=1
+	    when "1000"
+            mbr = memory[convertBinToInt(mar)];ac = additionBin(ac, mbr)
+	        pc+=1
+	    when "1001" then mbr = memory[convertBinToInt(mar)];ac = subBin(ac, mbr)
+	        pc+=1
+	    when "1010" then mbr = memory[convertBinToInt(mar)];ac = multBin(ac, mbr)
+	        pc+=1
+    	when "1011" then mbr = memory[convertBinToInt(mar)];ac = divBin(ac, mbr)
+	        pc+=1
         else  raise "#{operatField} command is not supported"
 	end
 end
-    print convertBinToDec(ac)
+    print convertBinToInt(ac)
 end
-#print memArray[convertBinToDec("00000000000000000")]
+#print memArray[convertBinToInt("00000000000000000")]
+
+#TODO написать программу котора складывает 3 числа и кладет результат в 4 ю ячейку иправить регулярку что бы проходила команда HALT
+#TODO программа - если в определенной ясейке 0 то программа складыввает, а если не 0 то вычитает другие ячейки
+
+=begin
+LOAD @3  складывает из mbr в аккумулятор
+ADD 4  складывает аккумулятор и mbr и складывает в аккумулятор
+HALT          ничего
+DAT 4         ничего
+DAT 123     ничего
+
+!!x=x
+!!True=True
+!!False = False
+!(!!x)=!x
+
+=end
+
+def assembler(mnemText)
+    text = mnemText.match(/([A-Z]+)\s+([=@$]?)([0-9]+)/)
+    if !mnemText.match(/([A-Z]+)\s+([=@$]?)([0-9]+)/)
+	raise "mnemonic assembler text has error"
+    end
+    command = text[1]
+    methodCode = text[2]
+    adress = text[3]
+    binText = ""
+    #p methodCode
+    case command
+	when "HALT" then binText += "0000000000000000"
+	    return binText
+	when "LOAD" then binText += "0001"
+	when "STORE" then binText += "0010"
+	when "CALL" then binText += "0011"
+	when "BR" then binText += "0100"
+	when "BREQ" then binText += "0101"
+	when "BRGE" then binText += "0110"
+	when "BRLT" then binText += "0111"
+	when "ADD" then binText += "1000"
+	when "SUB" then binText += "1001"
+	when "MUL" then binText += "1010"
+	when "DIV"  then binText += "1011"
+    end
+    case methodCode
+	when "" then binText += "00"
+	when "=" then binText += "01"
+	when "$" then binText += "10"
+	when "@" then binText += "11"
+    end
+    binText += addition0Param(10,convertDecToBin(adress.to_i))
+    return binText
+    
+end
+
 mainLoop()
+
+     
+
+#p assembler("LOAD 3")
+
 
 =begin
 
