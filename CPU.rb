@@ -530,10 +530,10 @@ def mainLoop()
     #memory[4] = convertTo16Bit(convertDecToBin(231))
     memory[0] = assembler("LOAD @3")
     memory[1] = assembler("ADD 4")
-    #memory[2] = assembler("HALT") 
+    memory[2] = assembler("HALT")
     memory[3] = convertTo16Bit(convertDecToBin(4))
     memory[4] = convertTo16Bit(convertDecToBin(231))
-    
+
     fileRead('testing', memory, memAdress, qyanAd)
     while true
 	ir = memory[pc]
@@ -593,17 +593,15 @@ ADD 4  складывает аккумулятор и mbr и складывае�
 HALT          ничего
 DAT 4         ничего
 DAT 123     ничего
-
 !!x=x
 !!True=True
 !!False = False
 !(!!x)=!x
-
 =end
 
 def assembler(mnemText)
-    text = mnemText.match(/([A-Z]+)\s+([=@$]?)([0-9]+)/)
-    if !mnemText.match(/([A-Z]+)\s+([=@$]?)([0-9]+)/)
+    text = mnemText.match(/HALT|([A-Z]+)\s+([=@$]?)([0-9]+)/)
+    if !mnemText.match(/HALT|([A-Z]+)\s+([=@$]?)([0-9]+)/)
 	raise "mnemonic assembler text has error"
     end
     command = text[1]
@@ -634,52 +632,36 @@ def assembler(mnemText)
     end
     binText += addition0Param(10,convertDecToBin(adress.to_i))
     return binText
-    
+
 end
 
 mainLoop()
 
-     
+
 
 #p assembler("LOAD 3")
 
 
 =begin
-
 35
 35  0 10
  5
  --
  50
   0
-
-
 01
 10
 00
 11
-
 01011 = ...+1*2^1+1*2^0
-
-
-
     134-128 = 6 - 4 = 2-2 = 0
-
 	 1   0  0 0  0 1 1 0
   256 128 64 32 16 8 4 2 1
-
     458%10 == 8
     458/10== 45
-
    0101/2 == 010
    0101%2 == 1
-
-
    458 % 2 = 0
   458/2=
-
    convertToBin(42) -> "010101"
-
 =end
-#Use this token to access the HTTP API:
-#6033655353:AAEPOIiUOp4caU6UbdxtVHwXo6Xp1fi7lLU
