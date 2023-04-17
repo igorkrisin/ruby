@@ -524,15 +524,29 @@ def mainLoop()
     memory = memArray
     memAdress = ""
     qyanAd = 0
-    #memory[0] = "0001" + "11" + "0000000011"
-    #memory[1] = "1000" + "00" + "0000000100"
-    #memory[3] = convertTo16Bit(convertDecToBin(4))
-    #memory[4] = convertTo16Bit(convertDecToBin(231))
-    memory[0] = assembler("LOAD @3")
-    memory[1] = assembler("ADD 4")
-    memory[2] = assembler("HALT")
-    memory[3] = convertTo16Bit(convertDecToBin(4))
-    memory[4] = convertTo16Bit(convertDecToBin(231))
+    #сложение двух чисел в бинарной записи
+        #memory[0] = "0001" + "11" + "0000000011"
+        #memory[1] = "1000" + "00" + "0000000100"
+        #memory[3] = convertTo16Bit(convertDecToBin(4))
+        #memory[4] = convertTo16Bit(convertDecToBin(231))
+    #сложение двух чисел в записи assembler
+        #memory[0] = assembler("LOAD @3")#  возми адрес в 3 ей ячейке(куда надо обратиться) и загрузи содержимое из этой (четвертой) ячейки в аккумулятор
+        #memory[1] = assembler("ADD 4") # сложи то что есть в четвертой ячейки с аккумулятором
+        #memory[2] = assembler("HALT") #останови процессор
+        #memory[3] = convertTo16Bit(convertDecToBin(4))
+        #memory[4] = convertTo16Bit(convertDecToBin(22))
+    # сложение 3х числел и помещение результата сложения в отдельную ячейку
+        #memory[0] = assembler('LOAD 4')
+        #memory[1] = assembler('ADD 5')
+        #memory[2] = assembler('ADD 6')
+        #memory[3] = assembler('STORE 7')
+        #memory[4] = convertTo16Bit(convertDecToBin(4))
+        #memory[5] = convertTo16Bit(convertDecToBin(6))
+        #memory[6] = convertTo16Bit(convertDecToBin(5))
+
+
+
+
 
     fileRead('testing', memory, memAdress, qyanAd)
     while true
@@ -553,29 +567,30 @@ def mainLoop()
 	     mar = convertTo16Bit(mbr.slice(5,11))							#indirect mode
 	end
 	case operatField
-	    when "0000" then break
-	    when "0001"
-            p "memory[convertBinToInt(mar)]: #{memory[convertBinToInt(mar)]}"
+	    when "0000" then break              #HALT
+	    when "0001"                         #LOAD
+            p "ac in LOAD: #{memory[convertBinToInt(mar)]}"
             mbr = memory[convertBinToInt(mar)];ac = mbr
             pc+=1
-	    when "0010" then mbr = memory[convertBinToInt(mar)];memory[convertBinToInt(mar)] = ac
+	    when "0010" then mbr = memory[convertBinToInt(mar)];memory[convertBinToInt(mar)] = ac #STORE
+            p "содержимое ячейки: #{convertBinToInt(memory[convertBinToInt(mar)])}"
 	    pc+=1
 	    when "0011"	then raise "CALL command is not supported"
-	    when "0100" then pc = mar
-	    when "0101"
+	    when "0100" then pc = mar           #BR
+	    when "0101"                         #BREQ
 		if(comparisBin(ac, "0") == 0)
 		    pc = mar
         end
 	    when "0110" then raise "BRGE (0110) command is not supported"
 	    when "0111" then raise "BRLT (0111) command is not supported"
-	    when "1000"
+	    when "1000"                                                                 #ADD
             mbr = memory[convertBinToInt(mar)];ac = additionBin(ac, mbr)
 	        pc+=1
-	    when "1001" then mbr = memory[convertBinToInt(mar)];ac = subBin(ac, mbr)
+	    when "1001" then mbr = memory[convertBinToInt(mar)];ac = subBin(ac, mbr)    #SUB
 	        pc+=1
-	    when "1010" then mbr = memory[convertBinToInt(mar)];ac = multBin(ac, mbr)
+	    when "1010" then mbr = memory[convertBinToInt(mar)];ac = multBin(ac, mbr)   #MULT
 	        pc+=1
-    	when "1011" then mbr = memory[convertBinToInt(mar)];ac = divBin(ac, mbr)
+    	when "1011" then mbr = memory[convertBinToInt(mar)];ac = divBin(ac, mbr)    #DIV
 	        pc+=1
         else  raise "#{operatField} command is not supported"
 	end
@@ -584,8 +599,8 @@ end
 end
 #print memArray[convertBinToInt("00000000000000000")]
 
-#TODO написать программу котора складывает 3 числа и кладет результат в 4 ю ячейку иправить регулярку что бы проходила команда HALT
-#TODO программа - если в определенной ясейке 0 то программа складыввает, а если не 0 то вычитает другие ячейки
+#TODO написать программу котора складывает 3 числа и кладет результат в 4 ю ячейку
+#TODO программа - если в определенной ясейке 0 то программа складыввает одни ячейки, а если не 0 то вычитает другие ячейки
 
 =begin
 LOAD @3  складывает из mbr в аккумулятор
