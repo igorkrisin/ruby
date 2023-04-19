@@ -515,6 +515,45 @@ end
 #print memArray
 # arr[i]
 # arr+i
+
+def dataInstruc(sourceCode)
+    #p "sourceCode: #{sourceCode}"
+    tempArr = sourceCode.split("\n")
+    #print "TemArr: #{tempArr}\n"
+    
+    objectFile = ""
+    for i in 0...tempArr.size
+	
+	if tempArr[i].match(/ORG\s+([0-9]+)/)
+	    temp = tempArr[i].match(/ORG (.*)/)
+	    objectFile += convertTo10Bit(convertDecToBin(temp[1].to_i))
+	elsif tempArr[i].match(/(DATA\s+)([0-9]+\s*)([,]\s*[0-9]+\s*)/)
+	    dataArr = tempArr[i].match(/DATA (.*)/)
+	    dataArr = dataArr[1].split(',')
+	    #dataArr = tempArr[i].split(',')
+	    #print "TemAr[i]: #{tempArr[i]}\n"
+	    #print "dataArr: #{dataArr}\n"
+	    for y in 0...dataArr.size
+		objectFile += convertTo16Bit(convertDecToBin(dataArr[y].to_i))+"\n"
+	    end
+	else
+	     objectFile += assembler(tempArr[i])+"\n"
+	
+	end	
+    end
+    return objectFile#доделать функцию, отладить весь процесс от написани файла до исполения программы из памяти. Подправить FileRead  что бы не считывалось количество команд. 
+end
+
+str = "ORG  100
+       LOAD 4
+       STORE 5
+       DATA 42, 13, 456, 67    "
+       
+
+	     
+
+# DATA 42, 13, 69
+
 def mainLoop()
 
 
@@ -543,6 +582,20 @@ def mainLoop()
         #memory[4] = convertTo16Bit(convertDecToBin(4))
         #memory[5] = convertTo16Bit(convertDecToBin(6))
         #memory[6] = convertTo16Bit(convertDecToBin(5))
+    # если в ячейке n лежит 0, то сложи одни ячейки, если не 0 то вычти другие
+    # поменяй местами 2 ячейки
+
+        memory[0] = assembler('LOAD 2')
+        memory[1] = assembler('STORE 5')
+        
+        memory[2] = convertTo16Bit(convertDecToBin(4))
+        memory[3] =  convertTo16Bit(convertDecToBin(7))
+
+        memory[4] =  convertTo16Bit(convertDecToBin(6))
+        p "memory[2] = : #{memory[2]}"
+        p "memory[3] = : #{memory[3]}"
+        p "memory[5] = : #{memory[5]}"
+
 
 
 
@@ -554,17 +607,18 @@ def mainLoop()
 	operatField, adressModeField, adressField = separWordField(ir)
 
 	case adressModeField
-	    when "00"
-	     mar = adressField
-	    when "01"
-	    mar = adressField
-	    when "10"
-	     mar = adressField
-	      mar = mar + xr
-	    when "11"
-	     mar = adressField
-	     mbr = memory[convertBinToInt(mar)]
-	     mar = convertTo16Bit(mbr.slice(5,11))							#indirect mode
+	    when "00"               #Direct mode    (none)
+	        mar = adressField
+	    when "01"               #Immediate mode (=)
+            mar = adressField
+	        mbr = mar
+	    when "10"               #Indexed mode   ($)
+	        mar = adressField
+	        mar = mar + xr
+	    when "11"               #Inderect mode  (@)
+	        mar = adressField
+	        mbr = memory[convertBinToInt(mar)]
+	        mar = convertTo16Bit(mbr.slice(5,11))							#indirect mode
 	end
 	case operatField
 	    when "0000" then break              #HALT
@@ -573,8 +627,8 @@ def mainLoop()
             mbr = memory[convertBinToInt(mar)];ac = mbr
             pc+=1
 	    when "0010" then mbr = memory[convertBinToInt(mar)];memory[convertBinToInt(mar)] = ac #STORE
-            p "содержимое ячейки: #{convertBinToInt(memory[convertBinToInt(mar)])}"
-	    pc+=1
+            p "mbr in STORE: #{convertBinToInt(memory[convertBinToInt(mar)])}"
+	        pc+=1
 	    when "0011"	then raise "CALL command is not supported"
 	    when "0100" then pc = mar           #BR
 	    when "0101"                         #BREQ
@@ -584,6 +638,8 @@ def mainLoop()
 	    when "0110" then raise "BRGE (0110) command is not supported"
 	    when "0111" then raise "BRLT (0111) command is not supported"
 	    when "1000"                                                                 #ADD
+            p "mbr in ADD: #{memory[convertBinToInt(mar)]}"
+            p "ac in ADD: #{ac}"
             mbr = memory[convertBinToInt(mar)];ac = additionBin(ac, mbr)
 	        pc+=1
 	    when "1001" then mbr = memory[convertBinToInt(mar)];ac = subBin(ac, mbr)    #SUB
@@ -600,7 +656,7 @@ end
 #print memArray[convertBinToInt("00000000000000000")]
 
 #TODO написать программу котора складывает 3 числа и кладет результат в 4 ю ячейку
-#TODO программа - если в определенной ясейке 0 то программа складыввает одни ячейки, а если не 0 то вычитает другие ячейки
+#TODO программа - если в определенной ячейке 0 то программа складыввает одни ячейки, а если не 0 то вычитает другие ячейки
 
 =begin
 LOAD @3  складывает из mbr в аккумулятор
@@ -625,34 +681,36 @@ def assembler(mnemText)
     binText = ""
     #p methodCode
     case command
-	when "HALT" then binText += "0000000000000000"
-	    return binText
-	when "LOAD" then binText += "0001"
-	when "STORE" then binText += "0010"
-	when "CALL" then binText += "0011"
-	when "BR" then binText += "0100"
-	when "BREQ" then binText += "0101"
-	when "BRGE" then binText += "0110"
-	when "BRLT" then binText += "0111"
-	when "ADD" then binText += "1000"
-	when "SUB" then binText += "1001"
-	when "MUL" then binText += "1010"
-	when "DIV"  then binText += "1011"
+        when "HALT" then binText += "0000000000000000"
+            return binText
+        when "LOAD" then binText += "0001"
+        when "STORE" then binText += "0010"
+        when "CALL" then binText += "0011"
+        when "BR" then binText += "0100"
+        when "BREQ" then binText += "0101"
+        when "BRGE" then binText += "0110"
+        when "BRLT" then binText += "0111"
+        when "ADD" then binText += "1000"
+        when "SUB" then binText += "1001"
+        when "MUL" then binText += "1010"
+        when "DIV"  then binText += "1011"
+        else
+    	    raise "the command in assembler is wrong:  #{command}" 
     end
     case methodCode
-	when "" then binText += "00"
-	when "=" then binText += "01"
-	when "$" then binText += "10"
-	when "@" then binText += "11"
+        when "" then binText += "00"
+        when "=" then binText += "01"
+        when "$" then binText += "10"
+        when "@" then binText += "11"
     end
     binText += addition0Param(10,convertDecToBin(adress.to_i))
     return binText
 
 end
 
-mainLoop()
+#mainLoop()
 
-
+p dataInstruc(str)
 
 #p assembler("LOAD 3")
 
