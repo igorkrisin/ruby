@@ -176,8 +176,11 @@ def additionBin(bin1, bin2)
 end
 
 def addition0(bin1, bin2)
-    while bin1.size() != bin2.size()
-        bin2 = "0" + bin2
+
+    if bin1>bin2
+        while bin1.size() != bin2.size()
+            bin2 = "0" + bin2
+        end
     end
     return bin2
 end
@@ -307,10 +310,10 @@ end
 #print divDec("239212","238")
 
 
-def addQuantityZero(bin, quan)
-    for i in 0...quan
-        bin = bin + "0"
-    end
+def addQuantityZero(bin, quan)#эта функция добавляет НУЖНОЕ количество нулей
+        for i in 0...quan
+            bin = bin + "0"
+        end
     return bin
 end
 
@@ -486,81 +489,83 @@ def check1or0(line)
 end
 
 def fileRead(nameFile,memory, memAdress, qyanAd)
-    count = 0
+    #count = 0
     File.readlines(nameFile).each do |line|
 
-        if line.size-1 == 10 && count == 0
+        if line.size-1 == 10
             check1or0(line)
-            #puts "load adress: #{line}"
+            puts "load adress: #{line}"
             memAdress = line.to_s #адрес в памяти куда сложить команду
-            count += 1
-        elsif line.size-1 == 10 && count == 1
-            check1or0(line)
-            #puts "quantity commands: #{line}"
-            qyanAd = line
-            count = 0
+            #count += 1
+
         else
             check1or0(line)
             if line.strip.size != 16
                 raise "ERROR in command file, size command line can be only 16 piece. Your value: #{line.size}"
             end
-             #puts "commands: #{line}" #line -это команда которую выполняем в из файла по адресу memAdress
+            puts "commands: #{line}" #line -это команда которую выполняем в из файла по адресу memAdress
+            puts "memAdress: #{memAdress}"
+            puts "addition0: #{addition0(memAdress, "1")}"
+            puts "line.to_s.strip: #{line.to_s.strip}"
             memory[convertBinToInt(memAdress)] = line.to_s.strip
             memAdress = additionBin(memAdress, addition0(memAdress, "1"))
         end
 
      end
+     #p memory
 end
-
+#puts "addition0TEST: #{addition0("101010101", "1")}"
 #print memArray
 # arr[i]
 # arr+i
 
-def dataInstruc(sourceCode)
-    #p "sourceCode: #{sourceCode}"
-    tempArr = sourceCode.split("\n")
-    #print "TemArr: #{tempArr}\n"
-    
-    objectFile = ""
-    for i in 0...tempArr.size
-	
-	if tempArr[i].match(/ORG\s+([0-9]+)/)
-	    temp = tempArr[i].match(/ORG (.*)/)
-	    objectFile += convertTo10Bit(convertDecToBin(temp[1].to_i))
-	elsif tempArr[i].match(/(DATA\s+)([0-9]+\s*)([,]\s*[0-9]+\s*)/)
-	    dataArr = tempArr[i].match(/DATA (.*)/)
-	    dataArr = dataArr[1].split(',')
-	    #dataArr = tempArr[i].split(',')
-	    #print "TemAr[i]: #{tempArr[i]}\n"
-	    #print "dataArr: #{dataArr}\n"
-	    for y in 0...dataArr.size
-		objectFile += convertTo16Bit(convertDecToBin(dataArr[y].to_i))+"\n"
-	    end
-	else
-	     objectFile += assembler(tempArr[i])+"\n"
-	
-	end	
+def addZero(bin, quan)# эта функция конвертирует число в нужное количество бит за счет добавления нолей
+    if(quan > bin.size)
+        for i in 0...(quan-bin.size)
+            bin = bin + "0"
+        end
     end
-    return objectFile#доделать функцию, отладить весь процесс от написани файла до исполения программы из памяти. Подправить FileRead  что бы не считывалось количество команд. 
+    return bin
 end
 
-str = "ORG  100
-       LOAD 4
-       STORE 5
-       DATA 42, 13, 456, 67    "
-       
+def dataInstruc()
+    #p "sourceCode: #{sourceCode}"
+    sourceCode =File.read("mnemonic")
+    tempArr = sourceCode.split("\n")
+    #print "TemArr: #{tempArr}\n"
+    objectFile = ""
+    for i in 0...tempArr.size
+        if tempArr[i].match(/ORG\s+([0-9]+)/)
+            temp = tempArr[i].match(/ORG (.*)/)
+            objectFile += addZero(convertDecToBin(temp[1].to_i), 10)+"\n"
+        elsif tempArr[i].match(/(DATA\s+)([0-9]+\s*)([,]\s*[0-9]+\s*)/)
+            dataArr = tempArr[i].match(/DATA (.*)/)
+            dataArr = dataArr[1].split(',')
+            print "TemAr[i]: #{tempArr[i]}\n"
+            print "dataArr: #{dataArr}\n"
+            for y in 0...dataArr.size
+                objectFile += convertTo16Bit(convertDecToBin(dataArr[y].to_i))+"\n"
+            end
+        else
+            objectFile += assembler(tempArr[i])+"\n"
 
-	     
-
-# DATA 42, 13, 69
+        end
+    end
+    p objectFile
+    File.write('testing', objectFile)
+    #return nil
+    #return objectFile#доделать функцию, отладить весь процесс от написани файла до исполения программы из памяти. Подправить FileRead  что бы не считывалось количество команд.
+end
 
 def mainLoop()
-
-
+    mar = "0000000000000000"
+    mbr = "0000000000000000"
+    ir = "0000000000000000"
     pc = 0
     xr = "0000000000000000"
     ac = "0000000000000000"
     memory = memArray
+    
     memAdress = ""
     qyanAd = 0
     #сложение двух чисел в бинарной записи
@@ -575,37 +580,36 @@ def mainLoop()
         #memory[3] = convertTo16Bit(convertDecToBin(4))
         #memory[4] = convertTo16Bit(convertDecToBin(22))
     # сложение 3х числел и помещение результата сложения в отдельную ячейку
-        #memory[0] = assembler('LOAD 4')
-        #memory[1] = assembler('ADD 5')
-        #memory[2] = assembler('ADD 6')
-        #memory[3] = assembler('STORE 7')
-        #memory[4] = convertTo16Bit(convertDecToBin(4))
-        #memory[5] = convertTo16Bit(convertDecToBin(6))
-        #memory[6] = convertTo16Bit(convertDecToBin(5))
+        memory[0] = assembler('LOAD 5')
+        memory[1] = assembler('ADD 6')
+        memory[2] = assembler('ADD 7')
+        memory[3] = assembler('STORE 8')
+        memory[4] = assembler('HALT')
+        memory[5] =  convertTo16Bit(convertDecToBin(4))#"0010000000000000" 
+        memory[6] = convertTo16Bit(convertDecToBin(6))
+        memory[7] = convertTo16Bit(convertDecToBin(5))
     # если в ячейке n лежит 0, то сложи одни ячейки, если не 0 то вычти другие
     # поменяй местами 2 ячейки
 
-        memory[0] = assembler('LOAD 2')
-        memory[1] = assembler('STORE 5')
-        
-        memory[2] = convertTo16Bit(convertDecToBin(4))
-        memory[3] =  convertTo16Bit(convertDecToBin(7))
+        #memory[0] = assembler('LOAD 2')
+        #memory[1] = assembler('STORE 5')
 
-        memory[4] =  convertTo16Bit(convertDecToBin(6))
-        p "memory[2] = : #{memory[2]}"
-        p "memory[3] = : #{memory[3]}"
-        p "memory[5] = : #{memory[5]}"
+        #memory[2] = convertTo16Bit(convertDecToBin(4))
+        #memory[3] =  convertTo16Bit(convertDecToBin(7))
 
+        #memory[4] =  convertTo16Bit(convertDecToBin(6))
+        #p "memory[2] = : #{memory[2]}"
+        #p "memory[3] = : #{memory[3]}"
+        #p "memory[5] = : #{memory[5]}"
 
-
-
-
-
-    fileRead('testing', memory, memAdress, qyanAd)
+    #fileRead('testing', memory, memAdress, qyanAd)
+    #TODO  найти баг почему ir короткий и  mar короткий в  trace  и добавить цвета каждое поле своего цвета ir bin 
+    #p memory
     while true
+	
 	ir = memory[pc]
 	operatField, adressModeField, adressField = separWordField(ir)
-
+	
 	case adressModeField
 	    when "00"               #Direct mode    (none)
 	        mar = adressField
@@ -615,13 +619,16 @@ def mainLoop()
 	    when "10"               #Indexed mode   ($)
 	        mar = adressField
 	        mar = mar + xr
-	    when "11"               #Inderect mode  (@)
+	    when "11"               #Inderect mode  (@)"
 	        mar = adressField
 	        mbr = memory[convertBinToInt(mar)]
 	        mar = convertTo16Bit(mbr.slice(5,11))							#indirect mode
 	end
 	case operatField
-	    when "0000" then break              #HALT
+	
+	    when "0000" 			#HALT
+		 traceRegister(ir, xr, mar, mbr, pc) 
+		 break              
 	    when "0001"                         #LOAD
             p "ac in LOAD: #{memory[convertBinToInt(mar)]}"
             mbr = memory[convertBinToInt(mar)];ac = mbr
@@ -633,7 +640,7 @@ def mainLoop()
 	    when "0100" then pc = mar           #BR
 	    when "0101"                         #BREQ
 		if(comparisBin(ac, "0") == 0)
-		    pc = mar
+		    pc = convertBintoInt(mar)
         end
 	    when "0110" then raise "BRGE (0110) command is not supported"
 	    when "0111" then raise "BRLT (0111) command is not supported"
@@ -650,7 +657,9 @@ def mainLoop()
 	        pc+=1
         else  raise "#{operatField} command is not supported"
 	end
-end
+	traceRegister(ir, xr, mar, mbr, pc) 
+    end
+    
     print convertBinToInt(ac)
 end
 #print memArray[convertBinToInt("00000000000000000")]
@@ -673,7 +682,7 @@ DAT 123     ничего
 def assembler(mnemText)
     text = mnemText.match(/HALT|([A-Z]+)\s+([=@$]?)([0-9]+)/)
     if !mnemText.match(/HALT|([A-Z]+)\s+([=@$]?)([0-9]+)/)
-	raise "mnemonic assembler text has error"
+	    raise "mnemonic assembler text has error"
     end
     command = text[1]
     methodCode = text[2]
@@ -681,8 +690,7 @@ def assembler(mnemText)
     binText = ""
     #p methodCode
     case command
-        when "HALT" then binText += "0000000000000000"
-            return binText
+        when "HALT" then return "0000000000000000"
         when "LOAD" then binText += "0001"
         when "STORE" then binText += "0010"
         when "CALL" then binText += "0011"
@@ -695,7 +703,7 @@ def assembler(mnemText)
         when "MUL" then binText += "1010"
         when "DIV"  then binText += "1011"
         else
-    	    raise "the command in assembler is wrong:  #{command}" 
+    	    #raise "the command in assembler is wrong: #{command}"
     end
     case methodCode
         when "" then binText += "00"
@@ -708,11 +716,50 @@ def assembler(mnemText)
 
 end
 
-#mainLoop()
 
-p dataInstruc(str)
+#dataInstruc()
 
-#p assembler("LOAD 3")
+
+def desAssemb(command)
+    finishText = ""
+    operatField, adressModeField, adressField = separWordField(command)
+    case operatField
+        when "0000" then return "HALT"
+        when "0001" then finishText += "LOAD"
+        when "0010" then finishText += "STORE"
+        when "0011" then finishText += "CALL"
+        when "0100" then finishText += "BR"
+        when "0101" then finishText += "BREQ"
+        when "0110" then finishText += "BRGE"
+        when "0111" then finishText += "BRLT"
+        when "1000" then finishText += "ADD"
+        when "1001" then finishText += "SUB"
+        when "1010" then finishText += "MUL"
+        when "1011" then finishText += "DIV"
+        else
+	    raise "the command in desAssembler is wrong:  #{operatField}"
+    end
+    finishText = finishText + " " 
+    case adressModeField
+	when "00" then finishText = finishText + "" 
+	when "01" then finishText = finishText + "=" 
+	when "10" then finishText = finishText + "$" 
+	when "11" then finishText = finishText + "@" 
+    end
+    finishText = finishText + convertBinToInt(adressField).to_s
+    
+    return finishText
+end
+
+
+def traceRegister(ir, xr, mar, mbr, pc)
+    puts "ir bin: #{ir}; ir desAssemb: #{desAssemb(ir)}; xr: #{xr}; mar: #{mar}; mbr: #{mbr}; pc: #{pc}"
+end
+
+
+mainLoop()
+#p assembler("LOAD @3")
+#p desAssemb(assembler("LOAD @3"))
 
 
 =begin
