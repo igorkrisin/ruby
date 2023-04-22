@@ -1,4 +1,4 @@
-
+require 'colorize'
 
 def convertDecToBin(dec)
 
@@ -177,17 +177,21 @@ end
 
 def addition0(bin1, bin2)
 
-    if bin1>bin2
+    if bin1.size>bin2.size
         while bin1.size() != bin2.size()
+
             bin2 = "0" + bin2
         end
     end
+    p bin2
     return bin2
 end
 
 def addition0Param(quantity, bin2)
-    while quantity != bin2.size()
-        bin2 = "0" + bin2
+    if quantity > bin2.size
+        while quantity != bin2.size()
+            bin2 = "0" + bin2
+        end
     end
     return bin2
 end
@@ -494,7 +498,7 @@ def fileRead(nameFile,memory, memAdress, qyanAd)
 
         if line.size-1 == 10
             check1or0(line)
-            puts "load adress: #{line}"
+            #puts "load adress: #{line}"
             memAdress = line.to_s #адрес в памяти куда сложить команду
             #count += 1
 
@@ -503,10 +507,10 @@ def fileRead(nameFile,memory, memAdress, qyanAd)
             if line.strip.size != 16
                 raise "ERROR in command file, size command line can be only 16 piece. Your value: #{line.size}"
             end
-            puts "commands: #{line}" #line -это команда которую выполняем в из файла по адресу memAdress
-            puts "memAdress: #{memAdress}"
-            puts "addition0: #{addition0(memAdress, "1")}"
-            puts "line.to_s.strip: #{line.to_s.strip}"
+            #puts "commands: #{line}" #line -это команда которую выполняем в из файла по адресу memAdress
+            #puts "memAdress: #{memAdress}"
+            #puts "addition0: #{addition0(memAdress, "1")}"
+            #puts "line.to_s.strip: #{line.to_s.strip}"
             memory[convertBinToInt(memAdress)] = line.to_s.strip
             memAdress = additionBin(memAdress, addition0(memAdress, "1"))
         end
@@ -514,7 +518,10 @@ def fileRead(nameFile,memory, memAdress, qyanAd)
      end
      #p memory
 end
-#puts "addition0TEST: #{addition0("101010101", "1")}"
+mem = "000000000"
+a =(addition0(mem, "1"))
+puts "a:  #{a}"
+puts "addition0TEST: #{additionBin(mem, a)}"
 #print memArray
 # arr[i]
 # arr+i
@@ -565,7 +572,7 @@ def mainLoop()
     xr = "0000000000000000"
     ac = "0000000000000000"
     memory = memArray
-    
+
     memAdress = ""
     qyanAd = 0
     #сложение двух чисел в бинарной записи
@@ -580,14 +587,17 @@ def mainLoop()
         #memory[3] = convertTo16Bit(convertDecToBin(4))
         #memory[4] = convertTo16Bit(convertDecToBin(22))
     # сложение 3х числел и помещение результата сложения в отдельную ячейку
-        memory[0] = assembler('LOAD 5')
-        memory[1] = assembler('ADD 6')
-        memory[2] = assembler('ADD 7')
-        memory[3] = assembler('STORE 8')
-        memory[4] = assembler('HALT')
-        memory[5] =  convertTo16Bit(convertDecToBin(4))#"0010000000000000" 
-        memory[6] = convertTo16Bit(convertDecToBin(6))
-        memory[7] = convertTo16Bit(convertDecToBin(5))
+        #memory[0] = assembler('LOAD 5')
+
+        #memory[1] = assembler('ADD 6')
+        #memory[2] = assembler('ADD 7')
+        #memory[3] = assembler('STORE 8')
+
+        #memory[4] = assembler('HALT')
+        #p memory
+        #memory[5] =  convertTo16Bit(convertDecToBin(4))#"0010000000000000"
+        #memory[6] = convertTo16Bit(convertDecToBin(6))
+        #memory[7] = convertTo16Bit(convertDecToBin(5))
     # если в ячейке n лежит 0, то сложи одни ячейки, если не 0 то вычти другие
     # поменяй местами 2 ячейки
 
@@ -602,64 +612,68 @@ def mainLoop()
         #p "memory[3] = : #{memory[3]}"
         #p "memory[5] = : #{memory[5]}"
 
-    #fileRead('testing', memory, memAdress, qyanAd)
-    #TODO  найти баг почему ir короткий и  mar короткий в  trace  и добавить цвета каждое поле своего цвета ir bin 
-    #p memory
+    fileRead('testing', memory, memAdress, qyanAd)
     while true
-	
-	ir = memory[pc]
-	operatField, adressModeField, adressField = separWordField(ir)
-	
-	case adressModeField
-	    when "00"               #Direct mode    (none)
-	        mar = adressField
-	    when "01"               #Immediate mode (=)
-            mar = adressField
-	        mbr = mar
-	    when "10"               #Indexed mode   ($)
-	        mar = adressField
-	        mar = mar + xr
-	    when "11"               #Inderect mode  (@)"
-	        mar = adressField
-	        mbr = memory[convertBinToInt(mar)]
-	        mar = convertTo16Bit(mbr.slice(5,11))							#indirect mode
-	end
-	case operatField
-	
-	    when "0000" 			#HALT
-		 traceRegister(ir, xr, mar, mbr, pc) 
-		 break              
-	    when "0001"                         #LOAD
-            p "ac in LOAD: #{memory[convertBinToInt(mar)]}"
-            mbr = memory[convertBinToInt(mar)];ac = mbr
-            pc+=1
-	    when "0010" then mbr = memory[convertBinToInt(mar)];memory[convertBinToInt(mar)] = ac #STORE
-            p "mbr in STORE: #{convertBinToInt(memory[convertBinToInt(mar)])}"
-	        pc+=1
-	    when "0011"	then raise "CALL command is not supported"
-	    when "0100" then pc = mar           #BR
-	    when "0101"                         #BREQ
-		if(comparisBin(ac, "0") == 0)
-		    pc = convertBintoInt(mar)
+
+        ir = memory[pc]
+        #p "ir:  #{ir} pc: #{pc}"
+        #p "memory: #{memory[4]}"
+        operatField, adressModeField, adressField = separWordField(ir)
+
+        case adressModeField
+            when "00"               #Direct mode    (none)
+                mar = adressField
+            when "01"               #Immediate mode (=)
+                mar = adressField
+                mbr = mar
+            when "10"               #Indexed mode   ($)
+                mar = adressField
+                mar = mar + xr
+            when "11"               #Inderect mode  (@)"
+                mar = adressField
+                mbr = memory[convertBinToInt(mar)]
+                mar = convertTo16Bit(mbr.slice(5,11))
+                                        #indirect mode
         end
-	    when "0110" then raise "BRGE (0110) command is not supported"
-	    when "0111" then raise "BRLT (0111) command is not supported"
-	    when "1000"                                                                 #ADD
-            p "mbr in ADD: #{memory[convertBinToInt(mar)]}"
-            p "ac in ADD: #{ac}"
-            mbr = memory[convertBinToInt(mar)];ac = additionBin(ac, mbr)
-	        pc+=1
-	    when "1001" then mbr = memory[convertBinToInt(mar)];ac = subBin(ac, mbr)    #SUB
-	        pc+=1
-	    when "1010" then mbr = memory[convertBinToInt(mar)];ac = multBin(ac, mbr)   #MULT
-	        pc+=1
-    	when "1011" then mbr = memory[convertBinToInt(mar)];ac = divBin(ac, mbr)    #DIV
-	        pc+=1
-        else  raise "#{operatField} command is not supported"
-	end
-	traceRegister(ir, xr, mar, mbr, pc) 
+       # p "trace3: "
+        #traceRegister(ir, xr, mar, mbr, pc)
+        case operatField
+            when "0000" 			#HALT
+            #traceRegister(ir, xr, mar, mbr, pc)          #TRACER
+            break
+            when "0001"                         #LOAD
+                #p "ac in LOAD: #{memory[convertBinToInt(mar)]}"
+                mbr = memory[convertBinToInt(mar)];ac = mbr
+                pc+=1
+            when "0010" then mbr = memory[convertBinToInt(mar)];memory[convertBinToInt(mar)] = ac #STORE
+                #p "mbr in STORE: #{memory[convertBinToInt(mar)]}"
+                #p "trace: "
+                #traceRegister(ir, xr, mar, mbr, pc)
+                pc+=1
+            when "0011"	then raise "CALL command is not supported"
+            when "0100" then pc = mar           #BR
+            when "0101"                         #BREQ
+            if(comparisBin(ac, "0") == 0)
+                pc = convertBintoInt(mar)
+            end
+            when "0110" then raise "BRGE (0110) command is not supported"
+            when "0111" then raise "BRLT (0111) command is not supported"
+            when "1000"                                                                 #ADD
+                #p "mbr in ADD: #{memory[convertBinToInt(mar)]}"
+                #p "ac in ADD: #{ac}"
+                mbr = memory[convertBinToInt(mar)];ac = additionBin(ac, mbr)
+                pc+=1
+            when "1001" then mbr = memory[convertBinToInt(mar)];ac = subBin(ac, mbr)    #SUB
+                pc+=1
+            when "1010" then mbr = memory[convertBinToInt(mar)];ac = multBin(ac, mbr)   #MULT
+                pc+=1
+            when "1011" then mbr = memory[convertBinToInt(mar)];ac = divBin(ac, mbr)    #DIV
+                pc+=1
+            else  raise "#{operatField} command is not supported"
+        end
+        ##traceRegister(ir, xr, mar, mbr, pc)         #TRACER
     end
-    
+
     print convertBinToInt(ac)
 end
 #print memArray[convertBinToInt("00000000000000000")]
@@ -684,13 +698,20 @@ def assembler(mnemText)
     if !mnemText.match(/HALT|([A-Z]+)\s+([=@$]?)([0-9]+)/)
 	    raise "mnemonic assembler text has error"
     end
+    if text[0] == "HALT"
+        return  "0000000000000000"
+    end
+    #p text
     command = text[1]
     methodCode = text[2]
     adress = text[3]
     binText = ""
     #p methodCode
+    p command
     case command
-        when "HALT" then return "0000000000000000"
+        #when "HALT"
+
+
         when "LOAD" then binText += "0001"
         when "STORE" then binText += "0010"
         when "CALL" then binText += "0011"
@@ -739,21 +760,21 @@ def desAssemb(command)
         else
 	    raise "the command in desAssembler is wrong:  #{operatField}"
     end
-    finishText = finishText + " " 
+    finishText = finishText + " "
     case adressModeField
-	when "00" then finishText = finishText + "" 
-	when "01" then finishText = finishText + "=" 
-	when "10" then finishText = finishText + "$" 
-	when "11" then finishText = finishText + "@" 
+	when "00" then finishText = finishText + ""
+	when "01" then finishText = finishText + "="
+	when "10" then finishText = finishText + "$"
+	when "11" then finishText = finishText + "@"
     end
     finishText = finishText + convertBinToInt(adressField).to_s
-    
+
     return finishText
 end
 
 
 def traceRegister(ir, xr, mar, mbr, pc)
-    puts "ir bin: #{ir}; ir desAssemb: #{desAssemb(ir)}; xr: #{xr}; mar: #{mar}; mbr: #{mbr}; pc: #{pc}"
+    puts "ir bin: #{ir.slice(0,4).red}#{ir.slice(4,2).green}#{ir.slice(6,10).blue}; ir desAssemb: #{desAssemb(ir)}; xr: #{xr}; mar: #{mar}; mbr: #{mbr}; pc: #{pc}"
 end
 
 
