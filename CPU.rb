@@ -639,7 +639,7 @@ def mainLoop()
         #traceRegister(ir, xr, mar, mbr, pc)
         case operatField
             when "0000" 			#HALT
-            #traceRegister(ir, xr, mar, mbr, pc)          #TRACER
+            #traceRegister(ir, xr, mar, mbr, pc)          #TRACER 
             break
             when "0001"                         #LOAD
                 #p "ac in LOAD: #{memory[convertBinToInt(mar)]}"
