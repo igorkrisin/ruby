@@ -703,7 +703,7 @@ def desAssemb(command)
 
     return finishText
 end
-#dffsfd
+#dffsfdвавыаываыв
 
 def traceRegister(ir, xr, mar, mbr, pc)
     puts "ir bin: #{ir.slice(0,4).red}#{ir.slice(4,2).green}#{ir.slice(6,10).blue}; ir desAssemb: #{desAssemb(ir)}; xr: #{xr}; mar: #{mar}; mbr: #{mbr}; pc: #{pc}"
