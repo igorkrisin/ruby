@@ -1,11 +1,10 @@
 #file assebler
 require './arithmetic'
 
+
 def dataInstruc()
-    #p "sourceCode: #{sourceCode}"
-    sourceCode =File.read("mnemonic")
+    sourceCode =File.read("break funct")
     tempArr = sourceCode.split("\n")
-    #print "TemArr: #{tempArr}\n"
     objectFile = ""
     for i in 0...tempArr.size
         if tempArr[i].match(/ORG\s+([0-9]+)/)
@@ -14,8 +13,6 @@ def dataInstruc()
         elsif tempArr[i].match(/(DATA\s+)([0-9]+\s*)([,]\s*[0-9]+\s*)/)
             dataArr = tempArr[i].match(/DATA (.*)/)
             dataArr = dataArr[1].split(',')
-            print "TemAr[i]: #{tempArr[i]}\n"
-            print "dataArr: #{dataArr}\n"
             for y in 0...dataArr.size
                 objectFile += convertTo16Bit(convertDecToBin(dataArr[y].to_i))+"\n"
             end
@@ -25,7 +22,7 @@ def dataInstruc()
         end
     end
     p objectFile
-    File.write('testing', objectFile)
+    File.write('test', objectFile)
 end
 
 
@@ -37,17 +34,12 @@ def assembler(mnemText)
     if text[0] == "HALT"
         return  "0000000000000000"
     end
-    #p text
     command = text[1]
     methodCode = text[2]
     adress = text[3]
     binText = ""
-    #p methodCode
     p command
     case command
-        #when "HALT"
-
-
         when "LOAD" then binText += "0001"
         when "STORE" then binText += "0010"
         when "CALL" then binText += "0011"
@@ -60,7 +52,7 @@ def assembler(mnemText)
         when "MUL" then binText += "1010"
         when "DIV"  then binText += "1011"
         else
-	    #raise "the command in assembler is wrong: #{command}"
+	    raise "the command in assembler is wrong: #{command}"
     end
     case methodCode
         when "" then binText += "00"
@@ -74,7 +66,7 @@ def assembler(mnemText)
 end
 
 
-#dataInstruc()
+dataInstruc()
 
 
 def desAssemb(command)
@@ -111,6 +103,6 @@ end
 
 def traceRegister(ir, xr, mar, mbr, pc, ac)
 
-    puts "ir bin: #{ir.slice(0,4).red}#{ir.slice(4,2).green}#{ir.slice(6,10).blue};ir desAssemb: #{desAssemb(ir)}; xr: #{xr}; mar: #{mar} (#{(convertBinToInt(mar)).to_s.yellow}); mbr: #{mbr}(#{convertBinToInt(mbr).to_s.yellow}); pc: #{pc}; ac:#{ac}(#{convertBinToInt(ac).to_s.yellow})"
+    puts "ir bin: #{ir.slice(0,4).red}#{ir.slice(4,2).green}#{ir.slice(6,10).blue};ir desAssemb: #{desAssemb(ir)}; xr: #{xr}(#{(convertBinToInt(xr)).to_s.yellow}); mar: #{mar} (#{(convertBinToInt(mar)).to_s.yellow}); mbr: #{mbr}(#{convertBinToInt(mbr).to_s.yellow}); pc: #{pc}(#{convertBinToInt(pc).to_s.yellow}); ac:#{ac}(#{convertBinToInt(ac).to_s.yellow})"
 end
 
