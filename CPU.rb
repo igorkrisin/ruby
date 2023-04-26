@@ -183,7 +183,7 @@ def addition0(bin1, bin2)
             bin2 = "0" + bin2
         end
     end
-    p bin2
+    #p bin2
     return bin2
 end
 
@@ -259,9 +259,6 @@ end
 
 
 
-
-#"575"
-#"997"
 
 def comparisDec(dec1, dec2)
     if dec1.size < dec2.size
@@ -524,6 +521,11 @@ def addZero(bin, quan)# эта функция конвертирует числ
     return bin
 end
 
+def binCounter(bin)
+    return additionBin(bin, addition0(bin, "1"))
+end
+
+
 def dataInstruc()
     sourceCode =File.read("mnemonic")
     #p "sourceCode: #{sourceCode}"
@@ -556,7 +558,7 @@ def mainLoop()
     mar = "0000000000000000"
     mbr = "0000000000000000"
     ir = "0000000000000000"
-    pc = 0
+    pc = "0000000000"
     xr = "0000000000000000"
     ac = "0000000000000000"
     memory = memArray
@@ -564,7 +566,7 @@ def mainLoop()
     qyanAd = 0
     fileRead('testing', memory, memAdress, qyanAd)
     while true
-        ir = memory[pc]
+        ir = memory[convertBinToInt(pc)]
         #p "ir:  #{ir} pc: #{pc}"
         #p "memory: #{memory[4]}"
         operatField, adressModeField, adressField = separWordField(ir)
@@ -589,17 +591,17 @@ def mainLoop()
         case operatField
             when "0000" 			#HALT
             #p "operatField: #{operatField}"
-            traceRegister(ir, xr, mar, mbr, pc)          #TRACER
+            traceRegister(ir, xr, mar, mbr, pc, ac)          #TRACER
             break
             when "0001"                         #LOAD
                 #p "ac in LOAD: #{memory[convertBinToInt(mar)]}"
                 mbr = memory[convertBinToInt(mar)];ac = mbr
-                pc+=1
+                pc = binCounter(pc)
             when "0010" then mbr = memory[convertBinToInt(mar)];memory[convertBinToInt(mar)] = ac #STORE
                 #p "mbr in STORE: #{memory[convertBinToInt(mar)]}"
                 #p "trace: "
                 #traceRegister(ir, xr, mar, mbr, pc)
-                pc+=1
+                pc = binCounter(pc)
             when "0011"	then raise "CALL command is not supported"
             when "0100" then pc = mar           #BR
             when "0101"                         #BREQ
@@ -612,19 +614,19 @@ def mainLoop()
                 #p "mbr in ADD: #{memory[convertBinToInt(mar)]}"
                 #p "ac in ADD: #{ac}"
                 mbr = memory[convertBinToInt(mar)];ac = additionBin(ac, mbr)
-                pc+=1
+                pc = binCounter(pc)
             when "1001" then mbr = memory[convertBinToInt(mar)];ac = subBin(ac, mbr)    #SUB
-                pc+=1
+                pc = binCounter(pc)
             when "1010" then mbr = memory[convertBinToInt(mar)];ac = multBin(ac, mbr)   #MULT
-                pc+=1
+                pc = binCounter(pc)
             when "1011" then mbr = memory[convertBinToInt(mar)];ac = divBin(ac, mbr)    #DIV
-                pc+=1
+                pc = binCounter(pc)
             else  raise "#{operatField} command is not supported"
         end
-        traceRegister(ir, xr, mar, mbr, pc)         #TRACER
+        traceRegister(ir, xr, mar, mbr, pc, ac)         #TRACER
     end
 
-    #print convertBinToInt(ac)
+    print convertBinToInt(ac)
 end
 
 
@@ -670,7 +672,6 @@ def assembler(mnemText)
 end
 
 
-dataInstruc()
 
 
 def desAssemb(command)
@@ -703,13 +704,13 @@ def desAssemb(command)
 
     return finishText
 end
-#dffsfdвавыаываыввывыsdasadsa
+#dffsfdвавыаываыввывы
 
-def traceRegister(ir, xr, mar, mbr, pc)
-    puts "ir bin: #{ir.slice(0,4).red}#{ir.slice(4,2).green}#{ir.slice(6,10).blue}; ir desAssemb: #{desAssemb(ir)}; xr: #{xr}; mar: #{mar}; mbr: #{mbr}; pc: #{pc}"
+def traceRegister(ir, xr, mar, mbr, pc, ac)
+    puts "ir bin: #{ir.slice(0,4).red}#{ir.slice(4,2).green}#{ir.slice(6,10).blue} (#{desAssemb(ir).yellow}); xr: #{xr}(#{convertBinToInt(xr).to_s.yellow}); mar: #{mar}(#{convertBinToInt(mar).to_s.yellow}); mbr: #{mbr}(#{convertBinToInt(mbr).to_s.yellow}); pc: #{pc}(#{convertBinToInt(pc).to_s.yellow}); ac: #{ac}(#{convertBinToInt(ac).to_s.yellow}) "
 end
 
-
+dataInstruc()
 mainLoop()
 #p assembler("LOAD @3")
 #p desAssemb(assembler("LOAD @3"))
