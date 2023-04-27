@@ -483,7 +483,7 @@ def check1or0(line)
     end
 end
 
-def fileRead(nameFile,memory, memAdress, qyanAd)
+def fileRead(nameFile,memory, memAdress)
     #count = 0
     File.readlines(nameFile).each do |line|
 
@@ -495,7 +495,9 @@ def fileRead(nameFile,memory, memAdress, qyanAd)
 
         else
             check1or0(line)
+            puts "line.strip1: #{line.strip}"
             if line.strip.size != 16
+                puts "line.strip2: #{line.strip}"
                 raise "ERROR in command file, size command line can be only 16 piece. Your value: #{line.size}"
             end
             #puts "commands: #{line}" #line -это команда которую выполняем в из файла по адресу memAdress
@@ -543,8 +545,8 @@ def dataInstruc()
         elsif tempArr[i].match(/(DATA\s+)([0-9]+\s*)([,]\s*[0-9]+\s*)/)
             dataArr = tempArr[i].match(/DATA (.*)/)
             dataArr = dataArr[1].split(',')
-            #print "TemAr[i]: #{tempArr[i]}\n"
-            #print "dataArr: #{dataArr}\n"
+            print "TemAr[i]: #{tempArr[i]}\n"
+            print "dataArr: #{dataArr}\n"
             for y in 0...dataArr.size
                 objectFile += convertTo16Bit(convertDecToBin(dataArr[y].to_i))+"\n"
             end
@@ -568,7 +570,7 @@ def mainLoop()
     memory = memArray
     memAdress = ""
     qyanAd = 0
-    fileRead('testing', memory, memAdress, qyanAd)
+    fileRead('testing', memory, memAdress)
     while true
         ir = memory[convertBinToInt(pc)]
         #p "ir:  #{ir} pc: #{pc}"
@@ -651,6 +653,7 @@ def assembler(mnemText)
     #p methodCode
     #p command
     case command
+        when "DATA" then binText += "0000" #не уверен в правильности данного условия, но на правктике работает
         when "LOAD" then binText += "0001"
         when "STORE" then binText += "0010"
         when "CALL" then binText += "0011"
