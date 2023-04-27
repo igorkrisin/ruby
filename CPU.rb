@@ -507,9 +507,8 @@ def fileRead(nameFile,memory, memAdress, qyanAd)
         end
 
      end
-     #p memory
+    
 end
-
 
 
 def addZero(bin, quan)# эта функция конвертирует число в нужное количество бит за счет добавления нолей
@@ -549,7 +548,7 @@ def dataInstruc()
 
         end
     end
-    ##p objectFile
+    #p objectFile
     File.write('testing', objectFile)
     #return nil
 end
@@ -598,7 +597,8 @@ def mainLoop()
                 mbr = memory[convertBinToInt(mar)];ac = mbr
                 pc = binCounter(pc)
             when "0010" then mbr = memory[convertBinToInt(mar)];memory[convertBinToInt(mar)] = ac #STORE
-                #p "mbr in STORE: #{memory[convertBinToInt(mar)]}"
+                puts "convertBinToInt(mar): #{convertBinToInt(mar)}"
+                p "mbr in STORE: #{memory[convertBinToInt(mar)]}"
                 #p "trace: "
                 #traceRegister(ir, xr, mar, mbr, pc)
                 pc = binCounter(pc)
@@ -625,7 +625,7 @@ def mainLoop()
         end
         traceRegister(ir, xr, mar, mbr, pc, ac)         #TRACER
     end
-
+    p "memory in 628: #{memory}"
     print convertBinToInt(ac)
 end
 
@@ -670,8 +670,6 @@ def assembler(mnemText)
     return binText
 
 end
-
-
 
 
 def desAssemb(command)
