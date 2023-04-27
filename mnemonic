@@ -1,6 +1,13 @@
+#скачки увеличивающие pc
 ORG 0
-LOAD 4
-ADD 5
-ADD 6
-STORE 9
-DATA 5,6,7
+LOAD 2
+ADD 1
+
+#3 числа сложить и записать в треюю ячейку
+#ORG 0
+#LOAD 4
+#ADD 5
+#ADD 6
+#STORE 7
+#HALT
+#DATA 4,5,6

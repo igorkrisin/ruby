@@ -511,7 +511,7 @@ def fileRead(nameFile,memory, memAdress, qyanAd)
 end
 
 
-def addZero(bin, quan)# эта функция конвертирует число в нужное количество бит за счет добавления нолей
+def addZero(bin, quan)# эта функция конвертирует число в нужное количество бит за счет добавления нолей
     if(quan > bin.size)
         for i in 0...(quan-bin.size)
             bin = bin + "0"
@@ -520,7 +520,7 @@ def addZero(bin, quan)# эта функция конвертирует числ
     return bin
 end
 
-def binCounter(bin)
+def binIterator(bin)
     return additionBin(bin, addition0(bin, "1"))
 end
 
@@ -532,7 +532,12 @@ def dataInstruc()
     #print "TemArr: #{tempArr}\n"
     objectFile = ""
     for i in 0...tempArr.size
-        if tempArr[i].match(/ORG\s+([0-9]+)/)
+        if tempArr[i][0] == "#"
+            #puts "#"
+            next
+        elsif  tempArr[i] == ""
+            next
+        elsif tempArr[i].match(/ORG\s+([0-9]+)/)
             temp = tempArr[i].match(/ORG (.*)/)
             objectFile += addZero(convertDecToBin(temp[1].to_i), 10)+"\n"
         elsif tempArr[i].match(/(DATA\s+)([0-9]+\s*)([,]\s*[0-9]+\s*)/)
@@ -595,13 +600,13 @@ def mainLoop()
             when "0001"                         #LOAD
                 #p "ac in LOAD: #{memory[convertBinToInt(mar)]}"
                 mbr = memory[convertBinToInt(mar)];ac = mbr
-                pc = binCounter(pc)
+                pc = binIterator(pc)
             when "0010" then mbr = memory[convertBinToInt(mar)];memory[convertBinToInt(mar)] = ac #STORE
-                puts "convertBinToInt(mar): #{convertBinToInt(mar)}"
-                p "mbr in STORE: #{memory[convertBinToInt(mar)]}"
+                #puts "convertBinToInt(mar): #{convertBinToInt(mar)}"
+                #p "mbr in STORE: #{memory[convertBinToInt(mar)]}"
                 #p "trace: "
                 #traceRegister(ir, xr, mar, mbr, pc)
-                pc = binCounter(pc)
+                pc = binIterator(pc)
             when "0011"	then raise "CALL command is not supported"
             when "0100" then pc = mar           #BR
             when "0101"                         #BREQ
@@ -614,18 +619,18 @@ def mainLoop()
                 #p "mbr in ADD: #{memory[convertBinToInt(mar)]}"
                 #p "ac in ADD: #{ac}"
                 mbr = memory[convertBinToInt(mar)];ac = additionBin(ac, mbr)
-                pc = binCounter(pc)
+                pc = binIterator(pc)
             when "1001" then mbr = memory[convertBinToInt(mar)];ac = subBin(ac, mbr)    #SUB
-                pc = binCounter(pc)
+                pc = binIterator(pc)
             when "1010" then mbr = memory[convertBinToInt(mar)];ac = multBin(ac, mbr)   #MULT
-                pc = binCounter(pc)
+                pc = binIterator(pc)
             when "1011" then mbr = memory[convertBinToInt(mar)];ac = divBin(ac, mbr)    #DIV
-                pc = binCounter(pc)
+                pc = binIterator(pc)
             else  raise "#{operatField} command is not supported"
         end
         traceRegister(ir, xr, mar, mbr, pc, ac)         #TRACER
     end
-    p "memory in 628: #{memory}"
+    #p "\nmemory in 628: #{memory}"
     print convertBinToInt(ac)
 end
 
