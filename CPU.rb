@@ -592,6 +592,7 @@ def mainLoop()
                 mar = convertTo16Bit(mbr.slice(5,11))
                                         #indirect mode
         end
+        #todo LOAD =2 ==> 2<-ac
        # p "trace3: "
         #traceRegister(ir, xr, mar, mbr, pc)
         case operatField
@@ -613,7 +614,9 @@ def mainLoop()
             when "0100" then pc = mar           #BR
             when "0101"                         #BREQ
             if(comparisBin(ac, "0") == 0)
-                pc = convertBintoInt(mar)
+                pc = mar
+            else
+        	pc = binIterator(pc)#binIncrement - rename this function
             end
             when "0110" then raise "BRGE (0110) command is not supported"
             when "0111" then raise "BRLT (0111) command is not supported"
@@ -640,7 +643,7 @@ end
 def assembler(mnemText)
     text = mnemText.match(/HALT|([A-Z]+)\s+([=@$]?)([0-9]+)/)
     if !mnemText.match(/HALT|([A-Z]+)\s+([=@$]?)([0-9]+)/)
-	    raise "mnemonic assembler text has error"
+	    raise "mnemonic assembler text has error #{text}"
     end
     if text[0] == "HALT"
         return  "0000000000000000"
