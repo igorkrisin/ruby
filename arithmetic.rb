@@ -1,25 +1,25 @@
-#arithmetic for CPU and assembler
-
 def convertDecToBin(dec)
 
     summ = ""
     while dec != 0 && dec !=1
-        summ = (dec%2).to_s + summ
-        dec = dec/2
+	    summ = (dec%2).to_s + summ
+	    dec = dec/2
     end
     summ = dec.to_s + summ
 
 end
 
+
 #puts convertDecToBin(458)
+
 
 def convertBinToInt(bin)
     summ = 0
     bin = bin.reverse
     for n in 0...bin.size()
-    if(bin[n] == "1")
-        summ += (bin[n]).to_i * 2 ** n
-    end
+	if(bin[n] == "1")
+	    summ += (bin[n]).to_i * 2 ** n
+	end
     end
     return summ
 end
@@ -137,6 +137,7 @@ end
 
 #puts removeFirst0("0000111")
 
+
 def convertOctToBin(oct)
     octStr = oct.to_s
     temp = ""
@@ -160,13 +161,14 @@ end
 
 #puts convertOctToBin(321)
 
+
 def additionBin(bin1, bin2)
     carry = 0
     summ = ""
     for i in (bin1.size()-1).downto(0)
-        temp = bin1[i].to_i+bin2[i].to_i+carry
-        summ = (temp%2).to_s + summ
-        carry = temp/2
+	    temp = bin1[i].to_i+bin2[i].to_i+carry
+	    summ = (temp%2).to_s + summ
+	    carry = temp/2
     end
     return summ
 end
@@ -193,6 +195,9 @@ def addition0Param(quantity, bin2)
 end
 
 #print addition0Param(10, "01010")
+#puts additionBin("1010", "1010")
+#puts addition0("010101", "1")
+
 def convertTo16Bit(bin)
     for i in 0...(16-bin.size)
         bin = "0" + bin
@@ -222,6 +227,8 @@ def subBinNew(bin1, bin2)
 end
 
 #puts subBinNew("100", "11")
+
+
 def subBin(bin1, bin2)
     bin1 = convertTo16Bit(bin1)
     bin2 = convertTo16Bit(bin2)
@@ -237,7 +244,7 @@ def subBin(bin1, bin2)
         elsif temp == -1 && borrow == 0
             #print "summ before: #{summ}\n"
             borrow = 1
-	    summ = "1" + summ
+    	    summ = "1" + summ
             #print "summ after: #{summ}\n"
         else
             summ = (bin1[i].to_i+borrow - bin2[i].to_i).to_s + summ
@@ -246,13 +253,16 @@ def subBin(bin1, bin2)
 
     return  summ
 end
-#puts  subBin("11111", "010"
+#puts  subBin("11111", "010")
+
+
+
 
 def comparisDec(dec1, dec2)
     if dec1.size < dec2.size
-        dec1 = addition0(dec2, dec1)
+	    dec1 = addition0(dec2, dec1)
     elsif dec1.size > dec2.size
-        dec2 = addition0(dec1, dec2)
+	    dec2 = addition0(dec1, dec2)
     end
     for i in 0...(dec1.to_s).size()
         if dec1[i].to_i < dec2[i].to_i
@@ -288,6 +298,7 @@ def divDec(dec1, dec2)
 
         rem2 = (rem2.to_s + remaind[0]).to_i#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
         remaind = remaind.slice(1, remaind.size - 1)# остаток от делителя режем на 1 знак спереди (его забрали на сл цикл строкой выше)
+       #rem2, remaind = separDivNum((rem2.to_s + remaind), dec2)
         print "rem2: #{rem2}\n"
         temp = temp + (rem2.to_i/dec2.to_i).to_s
         rem2 = (rem2.to_i%dec2.to_i).to_s
@@ -347,10 +358,10 @@ end
 
 def comparisBin(bin1, bin2)
     if bin1.size < bin2.size
-        bin1 = addition0(bin2, bin1)
+	    bin1 = addition0(bin2, bin1)
     elsif bin1.size > bin2.size
-        bin2 = addition0(bin1, bin2)
-    end
+	    bin2 = addition0(bin1, bin2)
+    end                                 #Нужен этот кусок кода? или у нас всегда 16 бит будет? Или бросить тут исключение?
 
     for i in 0...(bin1.to_s).size()
         if bin1[i].to_i < bin2[i].to_i
@@ -395,17 +406,28 @@ end
 
 def divBin(bin1, bin2)
     num, remaind = separDivNum(bin1 , bin2)#отделяем цифры пока первое не станет возможным поделить на второе
+    #print "remaind: #{remaind}\n"
+    #print "num: #{num}\n"
+    #print "subBin(num, bin2): #{removeZero(subBin(num,  bin2))}\n"
     if removeZero(subBin(num, bin2)) == "0"
+       # print "test \n"
         temp = "1"
     else
         temp = removeZero(subBin(num, bin2))
     end
     #print "temp: #{temp}\n"
     rem2 = removeZero(subBin(num, bin2))#остаток от деления после отделения цифры и выполенния первого шага деления
+    #print "rem2: #{rem2}\n"
+    #print "removeZero(subBin(num, bin2)): #{removeZero(subBin(num, bin2))}\n"
     while remaind != ""
+        #rem2 = (rem2 + remaind[0])#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
         rem2 = (removeZero(rem2) + remaind[0])
+        #print "rem2_-_: #{rem2}\n"
+        #print "temp_-_: #{temp}\n"
         remaind = remaind.slice(1, remaind.size - 1)# остаток от делителя режем на 1 знак спереди (его забрали на сл цикл строкой выше)
+
         while comparisBin(rem2, bin2) == -1
+            #print "test2 \n"
             if remaind == ""
                 remaind = remaind.slice(1, remaind.size - 1)
                 rem2 = removeZero(rem2)
@@ -415,12 +437,17 @@ def divBin(bin1, bin2)
             rem2 = (removeZero(rem2) + remaind[0])#прибавляем к этому остатку следующее число из делителя для следующей итерации деления
             remaind = remaind.slice(1, remaind.size - 1)
             temp = temp + "0"
+            #print "temp-: #{temp}\n"
+            #print "rem2-: #{rem2}\n"
         end
         if removeZero(subBin(rem2, bin2)) == "0"
+           #print "rem2__: #{rem2}\n"
             rem2 = "0"
             temp =  temp + "1"
+            #print "temp__: #{temp}\n"
         else
             rem2 = removeZero(subBin(rem2, bin2))
+            #print "rem__: #{rem2}\n"
             temp =  temp + rem2
         end
     end
@@ -428,7 +455,33 @@ def divBin(bin1, bin2)
 end
 
 
-def addZero(bin, quan)# эта функция конвертирует число в нужное количество бит за счет добавления нолей
+def separWordField(word)#разделение полей процессора
+    adressField = word.slice(6, 10)
+    adressModeField = word.slice(4, 2)
+    operationField = word.slice(0,4)
+
+    return [operationField, adressModeField, adressField]
+end
+
+#print separWordField("0123456789abcdef")
+
+def memArray()
+    mem = []
+    for i in 0..1024
+	mem.append(convertTo16Bit("0"))
+    end
+    return mem
+end
+
+def check1or0(line)
+    for i in 0...line.size-1
+        if line[i] != "1" && line[i] != "0"
+            raise "ERROR in command file, it's can consist only 0 or 1. Your adress value:  #{line[i]}"
+        end
+    end
+end
+
+def addZero(bin, quan)# эта функция конвертирует число в нужное количество бит за счет добавления нолей
     if(quan > bin.size)
         for i in 0...(quan-bin.size)
             bin = bin + "0"
@@ -436,7 +489,7 @@ def addZero(bin, quan)# эта функция конвертирует числ
     end
     return bin
 end
-#print comparisBin("00", "11")
-#print subBin("100", "11")
-#print divBin("10011101", "10")
-#print removeZero("1")
+
+def binIterator(bin)
+    return additionBin(bin, addition0(bin, "1"))
+end

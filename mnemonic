@@ -1,10 +1,10 @@
-#ORG 0
-#LOAD 4
-#SUB 5 
-#BREQ 6
-#BR
-#DATA 10, 1
-#HALT
+ORG 0
+LOAD 4
+SUB 5 
+BREQ 6
+BR 1
+DATA 10, 1
+HALT
 #скачки увеличивающие pc
 #ORG 0
 #LOAD 3  
