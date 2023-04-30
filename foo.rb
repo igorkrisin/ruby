@@ -1,3 +1,4 @@
+=begin
 require 'optparse'
 
 options = {}
@@ -7,3 +8,14 @@ OptionParser.new do |opt|
 end.parse!
 
 puts options
+=end
+
+def fact(num)
+  summ = 1
+  for i in 1...num+1
+    summ *= i
+  end
+  return summ
+end
+
+puts fact(6)

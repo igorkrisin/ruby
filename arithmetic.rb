@@ -161,10 +161,20 @@ end
 
 #puts convertOctToBin(321)
 
+def addition0Param(quantity, bin2)
+    if quantity > bin2.size
+        while quantity != bin2.size()
+            bin2 = "0" + bin2
+        end
+    end
+    return bin2
+end
 
 def additionBin(bin1, bin2)
     carry = 0
     summ = ""
+    bin1 = addition0Param(bin2.size, bin1)
+    bin2 = addition0Param(bin1.size, bin2)
     for i in (bin1.size()-1).downto(0)
 	    temp = bin1[i].to_i+bin2[i].to_i+carry
 	    summ = (temp%2).to_s + summ
@@ -172,6 +182,9 @@ def additionBin(bin1, bin2)
     end
     return summ
 end
+
+puts"addition!: #{additionBin("0000000000000101", "0000000000010100")}"
+puts"addition!: #{additionBin("0000000000000101", "000000000000010100")}"
 
 def addition0(bin1, bin2)
 
@@ -185,25 +198,25 @@ def addition0(bin1, bin2)
     return bin2
 end
 
-def addition0Param(quantity, bin2)
-    if quantity > bin2.size
-        while quantity != bin2.size()
-            bin2 = "0" + bin2
-        end
-    end
-    return bin2
-end
+
 
 #print addition0Param(10, "01010")
 #puts additionBin("1010", "1010")
 #puts addition0("010101", "1")
 
 def convertTo16Bit(bin)
-    for i in 0...(16-bin.size)
-        bin = "0" + bin
+    if bin.size < 16
+        for i in 0...(16-bin.size)
+            bin = "0" + bin
+        end
+    elsif bin.size > 16
+        #puts "test"
+        bin =bin.slice(bin.size - 16, 16)
     end
     return bin
 end
+
+print "16BIT!!CONVERT: #{convertTo16Bit("112233445566778899")}"
 
 def subBinNew(bin1, bin2)
     bin1 = convertTo16Bit(bin1)
@@ -319,7 +332,6 @@ end
 #puts addQuantityZero("111", 5)
 
 
-
 #puts convertTo16Bit("111010")
 
 def multBin(bin1, bin2)
@@ -327,6 +339,8 @@ def multBin(bin1, bin2)
     summ = ""
     bin1 = bin1.reverse
     bin2 = bin2.reverse
+    #puts "bin1 #{bin1}"
+    #puts "bin2 #{bin2}"
     for i in 0...bin1.size
         #puts "i: #{i} "
         temp = ""
@@ -335,7 +349,7 @@ def multBin(bin1, bin2)
             temp =  ((bin1[i].to_i)*(bin2[y].to_i)).to_s + temp
             #puts temp
         end
-
+        
         temp = addQuantityZero(temp, i)
         temp = convertTo16Bit(temp)
         #puts temp
@@ -350,10 +364,11 @@ def multBin(bin1, bin2)
             summ = additionBin(summ, summSubTotal[i])
         end
     end
+    
     return summ
 end
 
-#print multBin("1011", "1101")
+
 
 
 def comparisBin(bin1, bin2)
@@ -361,7 +376,7 @@ def comparisBin(bin1, bin2)
 	    bin1 = addition0(bin2, bin1)
     elsif bin1.size > bin2.size
 	    bin2 = addition0(bin1, bin2)
-    end                                 #Нужен этот кусок кода? или у нас всегда 16 бит будет? Или бросить тут исключение?
+    end                                 
 
     for i in 0...(bin1.to_s).size()
         if bin1[i].to_i < bin2[i].to_i
@@ -490,6 +505,7 @@ def addZero(bin, quan)# эта функция конвертирует числ�
     return bin
 end
 
-def binIterator(bin)
+def binIncrement(bin)
     return additionBin(bin, addition0(bin, "1"))
 end
+#print "multEND #{convertBinToInt(multBin("101", "101"))}\n"

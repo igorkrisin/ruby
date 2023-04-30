@@ -14,7 +14,7 @@ def fileRead(nameFile,memory, memAdress)
 
         else
             check1or0(line)
-            puts "line.strip1: #{line.strip}"
+            #puts "line.strip1: #{line.strip}"
             if line.strip.size != 16
                 puts "line.strip2: #{line.strip}"
                 raise "ERROR in command file, size command line can be only 16 piece. Your value: #{line.size}"
@@ -26,9 +26,7 @@ def fileRead(nameFile,memory, memAdress)
             memory[convertBinToInt(memAdress)] = line.to_s.strip
             memAdress = additionBin(memAdress, addition0(memAdress, "1"))
         end
-
      end
-    
 end
 
 
@@ -54,7 +52,7 @@ def mainLoop()
                 mar = adressField
             when "01"               #Immediate mode (=)
                 mar = adressField
-                mbr = mar
+                mbr = convertTo16Bit(mar)
             when "10"               #Indexed mode   ($)
                 mar = adressField
                 mar = mar + xr
@@ -62,58 +60,82 @@ def mainLoop()
                 mar = adressField
                 mbr = memory[convertBinToInt(mar)]
                 mar = convertTo16Bit(mbr.slice(5,11))
-                                        #indirect mode
         end
         #todo LOAD =2 ==> 2<-ac
-       # p "trace3: "
-        #traceRegister(ir, xr, mar, mbr, pc)
         case operatField
-            when "0000" 			#HALT
+            when "0000" 			                        #HALT
             #p "operatField: #{operatField}"
-            traceRegister(ir, xr, mar, mbr, pc, ac)          #TRACER
+            traceRegister(ir, xr, mar, mbr, pc, ac)         #TRACER
             break
-            when "0001"                         #LOAD
-                #p "ac in LOAD: #{memory[convertBinToInt(mar)]}"
-                mbr = memory[convertBinToInt(mar)];ac = mbr
-                pc = binIterator(pc)
-            when "0010" then mbr = memory[convertBinToInt(mar)];memory[convertBinToInt(mar)] = ac #STORE
+            when "0001"                                     #LOAD
+                if adressModeField != '01'
+                    mbr = memory[convertBinToInt(mar)];
+                end
+                ac = mbr
+                pc = binIncrement(pc)
+            when "0010" 
+                if adressModeField != '01'
+                    mbr = memory[convertBinToInt(mar)]
+                end
+                memory[convertBinToInt(mar)] = ac #STORE
                 #puts "convertBinToInt(mar): #{convertBinToInt(mar)}"
                 #p "mbr in STORE: #{memory[convertBinToInt(mar)]}"
                 #p "trace: "
                 #traceRegister(ir, xr, mar, mbr, pc)
-                pc = binIterator(pc)
+                pc = binIncrement(pc)
             when "0011"	then raise "CALL command is not supported"
-            when "0100" then pc = mar           #BR
-            when "0101"                         #BREQ
+            when "0100" then pc = mar                         #BR
+            when "0101"                                       #BREQ
             if(comparisBin(ac, "0") == 0)
                 pc = mar
             else
-        	pc = binIterator(pc)#binIncrement - rename this function
+        	pc = binIncrement(pc)
             end
             when "0110" then raise "BRGE (0110) command is not supported"
             when "0111" then raise "BRLT (0111) command is not supported"
-            when "1000"                                                                 #ADD
+            when "1000"                                         #ADD
                 #p "mbr in ADD: #{memory[convertBinToInt(mar)]}"
                 #p "ac in ADD: #{ac}"
-                mbr = memory[convertBinToInt(mar)];ac = additionBin(ac, mbr)
-                pc = binIterator(pc)
-            when "1001" then mbr = memory[convertBinToInt(mar)];ac = subBin(ac, mbr)    #SUB
-                pc = binIterator(pc)
-            when "1010" then mbr = memory[convertBinToInt(mar)];ac = multBin(ac, mbr)   #MULT
-                pc = binIterator(pc)
-            when "1011" then mbr = memory[convertBinToInt(mar)];ac = divBin(ac, mbr)    #DIV
-                pc = binIterator(pc)
+                if adressModeField != '01'
+                    mbr = memory[convertBinToInt(mar)]
+                end
+                ac = additionBin(ac, mbr)
+                pc = binIncrement(pc)
+            when "1001"                                        #SUB
+                if adressModeField != '01'
+                    mbr = memory[convertBinToInt(mar)]
+                end
+                ac = subBin(ac, mbr)    
+                pc = binIncrement(pc)
+            when "1010"                                        #MULT
+                if adressModeField != '01'
+                    mbr = memory[convertBinToInt(mar)]
+                    p "mbr: #{mbr}"
+                end
+                p "ac1: #{ac}" 
+                ac = multBin(ac, mbr) 
+                p "ac2: #{ac}" 
+                pc = binIncrement(pc)
+            when "1011"                                         #DIV
+                if adressModeField != '01'
+                    mbr = memory[convertBinToInt(mar)]
+                end
+                ac = divBin(ac, mbr)    
+                pc = binIncrement(pc)
             else  raise "#{operatField} command is not supported"
         end
-        traceRegister(ir, xr, mar, mbr, pc, ac)         #TRACER
+        traceRegister(ir, xr, mar, mbr, pc, ac)                 #TRACER
     end
     #p "\nmemory in 628: #{memory}"
     print convertBinToInt(ac)
 end
-
+a = "0000000000000101"
+b = "0000000000000101"
+puts "MULTIP: #{multBin(a, b)}  #{(convertBinToInt(multBin(a, b)))}"
 def traceRegister(ir, xr, mar, mbr, pc, ac)
-    puts "ir bin: #{ir.slice(0,4).red}#{ir.slice(4,2).green}#{ir.slice(6,10).blue} (#{desAssemb(ir).yellow}); xr: #{xr}(#{convertBinToInt(xr).to_s.yellow}); mar: #{mar}(#{convertBinToInt(mar).to_s.yellow}); mbr: #{mbr}(#{convertBinToInt(mbr).to_s.yellow}); pc: #{pc}(#{convertBinToInt(pc).to_s.yellow}); ac: #{ac}(#{convertBinToInt(ac).to_s.yellow}) "
+    puts "ir: #{ir.slice(0,4).red}#{ir.slice(4,2).green}#{ir.slice(6,10).blue}(#{desAssemb(ir).yellow}); xr: #{xr}(#{convertBinToInt(xr).to_s.yellow}); mar: #{mar}(#{convertBinToInt(mar).to_s.yellow}); mbr: #{mbr}(#{convertBinToInt(mbr).to_s.yellow}); pc: #{pc}(#{convertBinToInt(pc).to_s.yellow}); ac: #{ac}(#{convertBinToInt(ac).to_s.yellow}) "
 end
+puts "25 #{convertDecToBin(25)}\n"
 
 mainLoop()
 #p assembler("LOAD @3")

@@ -1,17 +1,54 @@
+#factorial
+
+#ORG 0
+#LOAD =5 #0
+#STORE 8 #1
+#SUB 6   #2
+#BREQ 7  #3
+#MUL 8   #4
+#BR 1    #5
+#DATA 1  #6
+#HALT    #7
+
+#умножение при помощи immediate (проверяю работоспособность умножения)
 ORG 0
-LOAD 4
-SUB 5 
-BREQ 6
-BR 1
-DATA 10, 1
+LOAD =5
+MUL 3
 HALT
+DATA 5
+
+#сложение при помощи immediate mode
+#ORG 0
+#LOAD =2
+#ADD 2
+#HALT
+#DATA 5
+
+#от 10 до 0 уменьшаем ас с immediate
+#ORG 0
+#LOAD =10
+#SUB 4 
+#BREQ 6
+#BR 1
+#DATA 1
+#HALT
+
+#от 10 до 0 уменьшаем ас
+#ORG 0
+#LOAD 4
+#SUB 5 
+#BREQ 6
+#BR 1
+#DATA 10, 1
+#HALT
+
 #скачки увеличивающие pc
 #ORG 0
 #LOAD 3  
 #ADD 3
 #BR 1
 #DATA 1
-# TODO что бы комм, работали как в других языках программирования
+
 #3 числа сложить и записать в треюю ячейку
 #ORG 0
 #LOAD 4
