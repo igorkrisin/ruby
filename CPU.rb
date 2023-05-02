@@ -77,11 +77,7 @@ def mainLoop()
                 if adressModeField != '01'
                     mbr = memory[convertBinToInt(mar)]
                 end
-                memory[convertBinToInt(mar)] = ac #STORE
-                #puts "convertBinToInt(mar): #{convertBinToInt(mar)}"
-                #p "mbr in STORE: #{memory[convertBinToInt(mar)]}"
-                #p "trace: "
-                #traceRegister(ir, xr, mar, mbr, pc)
+                memory[convertBinToInt(mar)] = ac           #STORE
                 pc = binIncrement(pc)
             when "0011"	then raise "CALL command is not supported"
             when "0100" then pc = mar                         #BR
@@ -110,11 +106,11 @@ def mainLoop()
             when "1010"                                        #MULT
                 if adressModeField != '01'
                     mbr = memory[convertBinToInt(mar)]
-                    p "mbr: #{mbr}"
+                    #p "mbr: #{mbr}"
                 end
-                p "ac1: #{ac}" 
+                #p "ac1: #{ac}" 
                 ac = multBin(ac, mbr) 
-                p "ac2: #{ac}" 
+                #p "ac2: #{ac}" 
                 pc = binIncrement(pc)
             when "1011"                                         #DIV
                 if adressModeField != '01'
@@ -131,11 +127,11 @@ def mainLoop()
 end
 a = "0000000000000101"
 b = "0000000000000101"
-puts "MULTIP: #{multBin(a, b)}  #{(convertBinToInt(multBin(a, b)))}"
+#puts "MULTIP: #{multBin(a, b)}  #{(convertBinToInt(multBin(a, b)))}"
 def traceRegister(ir, xr, mar, mbr, pc, ac)
     puts "ir: #{ir.slice(0,4).red}#{ir.slice(4,2).green}#{ir.slice(6,10).blue}(#{desAssemb(ir).yellow}); xr: #{xr}(#{convertBinToInt(xr).to_s.yellow}); mar: #{mar}(#{convertBinToInt(mar).to_s.yellow}); mbr: #{mbr}(#{convertBinToInt(mbr).to_s.yellow}); pc: #{pc}(#{convertBinToInt(pc).to_s.yellow}); ac: #{ac}(#{convertBinToInt(ac).to_s.yellow}) "
 end
-puts "25 #{convertDecToBin(25)}\n"
+#puts "25 #{convertDecToBin(25)}\n"
 
 mainLoop()
 #p assembler("LOAD @3")

@@ -183,8 +183,8 @@ def additionBin(bin1, bin2)
     return summ
 end
 
-puts"addition!: #{additionBin("0000000000000101", "0000000000010100")}"
-puts"addition!: #{additionBin("0000000000000101", "000000000000010100")}"
+#puts"addition!: #{additionBin("0000000000000101", "0000000000010100")}"
+#puts"addition!: #{additionBin("0000000000000101", "000000000000010100")}"
 
 def addition0(bin1, bin2)
 
@@ -216,7 +216,7 @@ def convertTo16Bit(bin)
     return bin
 end
 
-print "16BIT!!CONVERT: #{convertTo16Bit("112233445566778899")}"
+#print "16BIT!!CONVERT: #{convertTo16Bit("112233445566778899")}"
 
 def subBinNew(bin1, bin2)
     bin1 = convertTo16Bit(bin1)
