@@ -184,7 +184,7 @@ def additionBin(bin1, bin2)
 end
 
 #puts"addition!: #{additionBin("0000000000000101", "0000000000010100")}"
-#puts"addition!: #{additionBin("0000000000000101", "000000000000010100")}"
+# puts"addition!: #{additionBin("0000000000000101", "000000000000010100")}"
 
 def addition0(bin1, bin2)
 

@@ -1,6 +1,9 @@
 require 'colorize'
+require 'optparse'
 require './arithmetic.rb'
 require './assembler.rb'
+
+
 
 def fileRead(nameFile,memory, memAdress)
     #count = 0
@@ -31,6 +34,12 @@ end
 
 
 def mainLoop()
+    options = {}
+    OptionParser.new do |opt|
+    opt.on('--traceOne ') { |o| options[:trace] = o }
+    opt.on('--traceRange ') { |o| options[:trace] = o }
+    end.parse!
+    index = 4
     mar = "0000000000000000"
     mbr = "0000000000000000"
     ir = "0000000000000000"
@@ -65,7 +74,7 @@ def mainLoop()
         case operatField
             when "0000" 			                        #HALT
             #p "operatField: #{operatField}"
-            traceRegister(ir, xr, mar, mbr, pc, ac)         #TRACER
+            traceRegister(ir, xr, mar, mbr, pc, ac,index)         #TRACER
             break
             when "0001"                                     #LOAD
                 if adressModeField != '01'
@@ -120,23 +129,72 @@ def mainLoop()
                 pc = binIncrement(pc)
             else  raise "#{operatField} command is not supported"
         end
-        traceRegister(ir, xr, mar, mbr, pc, ac)                 #TRACER
+        traceRegister(ir, xr, mar, mbr, pc, ac, index)                 #TRACER
+    end
+    if options[:trace] != nil
+        traceBitMemory(options[:trace], memory)
     end
     #p "\nmemory in 628: #{memory}"
     print convertBinToInt(ac)
 end
-a = "0000000000000101"
-b = "0000000000000101"
-#puts "MULTIP: #{multBin(a, b)}  #{(convertBinToInt(multBin(a, b)))}"
-def traceRegister(ir, xr, mar, mbr, pc, ac)
-    puts "ir: #{ir.slice(0,4).red}#{ir.slice(4,2).green}#{ir.slice(6,10).blue}(#{desAssemb(ir).yellow}); xr: #{xr}(#{convertBinToInt(xr).to_s.yellow}); mar: #{mar}(#{convertBinToInt(mar).to_s.yellow}); mbr: #{mbr}(#{convertBinToInt(mbr).to_s.yellow}); pc: #{pc}(#{convertBinToInt(pc).to_s.yellow}); ac: #{ac}(#{convertBinToInt(ac).to_s.yellow}) "
+
+
+def traceRegister(ir, xr, mar, mbr, pc, ac, index)
+    puts "ir: #{ir.slice(0,4).red}#{ir.slice(4,2).green}#{ir.slice(6,10).blue}(#{desAssemb(ir).yellow}); xr: #{xr}(#{convertBinToInt(xr).to_s.yellow}); mar: #{mar}(#{convertBinToInt(mar).to_s.yellow}); mbr: #{mbr}(#{convertBinToInt(mbr).to_s.yellow}); pc: #{pc}(#{convertBinToInt(pc).to_s.yellow}); ac: #{ac}(#{convertBinToInt(ac).to_s.yellow})) "
 end
 #puts "25 #{convertDecToBin(25)}\n"
 
+ 
+
+ 
+#puts arr[options[:trace].to_i]
+ 
+
+def traceBitMemory(index, memArr)
+    #arr = [0,1,2,3,4,5,6,7,8,9]
+    
+    if index.length == 0
+        raise "the trace index for memory is empty"
+    end
+    if index.match(/^[0-9]+$/) && index.to_i >=0 && index.to_i <= 1024
+        puts "mem[#{index.red}]: |#{memArr[index.to_i]}(#{convertBinToInt(memArr[index.to_i]).to_s.yellow})| "
+         
+    elsif index.match(/^[0-9]*[-].[0-9]*$/)
+        temp =  index.split('-')
+        startInd = temp[0]
+        finishInd = temp[1]
+        if startInd.to_i < 0 || startInd.to_i > 1024 
+            raise "wrong the range index for memory in trace bit memory --#{startInd}--"
+        end
+        if finishInd.to_i < 0 || finishInd.to_i > 1024 
+            raise "wrong the range index for memory in trace bit memory --#{finishInd}--"
+        end
+        for i in startInd.to_i..finishInd.to_i
+            puts "mem[#{i.to_s.red}]: |#{memArr[i]}(#{convertBinToInt(memArr[i]).to_s.yellow})| "
+        end
+        
+    else
+        raise "wrong a memory index in trace bit memory --#{index}--"
+    end
+    
+end
+ 
+#traceBitMemory(options[:trace], memArr)
 mainLoop()
 #p assembler("LOAD @3")
 #p desAssemb(assembler("LOAD @3"))
 =begin
+
+план на CPU:
+1) вывести управление трасировкой в опции командной строки
+2) добавить в ассемблер мнемонические метки
+3) закодить на ассемблере пару сортировок
+4) добавить отрицательные числа через дополнительный код
+5) опционально: исследовать троичную систему счисления для представления отрицательных чисел
+6) перейти к второму процессору из второй части книги
+7) закодить на ассемблере рекурсивный факториал и фибоначчи
+8) может еще что-то. ввод-вывод, например
+
 LOAD @3  складывает из mbr в аккумулятор
 ADD 4  складывает аккумулятор и mbr и складывает в аккумулятор
 HALT          ничего
