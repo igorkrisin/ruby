@@ -170,6 +170,7 @@ def addition0Param(quantity, bin2)
     return bin2
 end
 
+
 def additionBin(bin1, bin2)
     carry = 0
     summ = ""
@@ -183,7 +184,7 @@ def additionBin(bin1, bin2)
     return summ
 end
 
-#puts"addition!: #{additionBin("0000000000000101", "0000000000010100")}"
+#puts"addition!: #{additionBin("0000001000", "00000000001")}"
 # puts"addition!: #{additionBin("0000000000000101", "000000000000010100")}"
 
 def addition0(bin1, bin2)

@@ -3,34 +3,57 @@ require 'optparse'
 require './arithmetic.rb'
 require './assembler.rb'
 
+def desAssemb(command)
+    finishText = ""
+    operatField, adressModeField, adressField = separWordField(command)
+    case operatField
+        when "0000" then return "HALT"
+        when "0001" then finishText += "LOAD"
+        when "0010" then finishText += "STORE"
+        when "0011" then finishText += "CALL"
+        when "0100" then finishText += "BR"
+        when "0101" then finishText += "BREQ"
+        when "0110" then finishText += "BRGE"
+        when "0111" then finishText += "BRLT"
+        when "1000" then finishText += "ADD"
+        when "1001" then finishText += "SUB"
+        when "1010" then finishText += "MUL"
+        when "1011" then finishText += "DIV"
+        else
+	    raise "the command in desAssembler is wrong:  #{operatField}"
+    end
+    finishText = finishText + " "
+    case adressModeField
+	when "00" then finishText = finishText + ""
+	when "01" then finishText = finishText + "="
+	when "10" then finishText = finishText + "$"
+	when "11" then finishText = finishText + "@"
+    end
+    finishText = finishText + convertBinToInt(adressField).to_s
+
+    return finishText
+end
 
 
 def fileRead(nameFile,memory, memAdress)
-    #count = 0
     File.readlines(nameFile).each do |line|
-
         if line.size-1 == 10
             check1or0(line)
-            #puts "load adress: #{line}"
+            if line.include? "\n"
+               line = line.delete("\n")
+            end
             memAdress = line.to_s #адрес в памяти куда сложить команду
-            #count += 1
-
         else
             check1or0(line)
-            #puts "line.strip1: #{line.strip}"
             if line.strip.size != 16
-                puts "line.strip2: #{line.strip}"
                 raise "ERROR in command file, size command line can be only 16 piece. Your value: #{line.size}"
             end
-            #puts "commands: #{line}" #line -это команда которую выполняем в из файла по адресу memAdress
-            #puts "memAdress: #{memAdress}"
-            #puts "addition0: #{addition0(memAdress, "1")}"
-            #puts "line.to_s.strip: #{line.to_s.strip}"
             memory[convertBinToInt(memAdress)] = line.to_s.strip
-            memAdress = additionBin(memAdress, addition0(memAdress, "1"))
+            memAdress = additionBin(memAdress, addition0Param(memAdress.size, "1"))
         end
      end
 end
+
 
 
 def mainLoop()
@@ -49,7 +72,7 @@ def mainLoop()
     memory = memArray
     memAdress = ""
     qyanAd = 0
-    fileRead('testing', memory, memAdress)
+    fileRead('testing.obj', memory, memAdress)
     while true
         ir = memory[convertBinToInt(pc)]
         #p "ir:  #{ir} pc: #{pc}"
@@ -88,7 +111,12 @@ def mainLoop()
                 end
                 memory[convertBinToInt(mar)] = ac           #STORE
                 pc = binIncrement(pc)
-            when "0011"	then raise "CALL command is not supported"
+            when "0011"					                    #CALL
+        	mbr = binIncrement(pc)
+            #p "mbr in CALL: #{ binIncrement(pc)}"
+        	memory[convertBinToInt(mar)] = mbr
+        	pc = mar
+        	pc = binIncrement(pc)
             when "0100" then pc = mar                         #BR
             when "0101"                                       #BREQ
             if(comparisBin(ac, "0") == 0)
@@ -145,7 +173,7 @@ end
 #puts "25 #{convertDecToBin(25)}\n"
 
  
-
+#исправить
  
 #puts arr[options[:trace].to_i]
  
@@ -157,7 +185,7 @@ def traceBitMemory(index, memArr)
         raise "the trace index for memory is empty"
     end
     if index.match(/^[0-9]+$/) && index.to_i >=0 && index.to_i <= 1024
-        puts "mem[#{index.red}]: |#{memArr[index.to_i]}(#{convertBinToInt(memArr[index.to_i]).to_s.yellow})| "
+        print "mem[#{index.red}]: |#{memArr[index.to_i]}(#{convertBinToInt(memArr[index.to_i]).to_s.yellow})| "
          
     elsif index.match(/^[0-9]*[-].[0-9]*$/)
         temp =  index.split('-')
@@ -170,7 +198,7 @@ def traceBitMemory(index, memArr)
             raise "wrong the range index for memory in trace bit memory --#{finishInd}--"
         end
         for i in startInd.to_i..finishInd.to_i
-            puts "mem[#{i.to_s.red}]: |#{memArr[i]}(#{convertBinToInt(memArr[i]).to_s.yellow})| "
+            print "mem[#{i.to_s.red}]:#{memArr[i]}(#{convertBinToInt(memArr[i].slice(6,10)).to_s.yellow}); ""\n";
         end
         
     else
