@@ -1,33 +1,6 @@
 #file assebler
 require './arithmetic'
 
-def dataInstruc()
-    sourceCode =File.read("mnemonic.asm")
-    tempArr = sourceCode.split("\n")
-    objectFile = ""
-    for i in 0...tempArr.size
-        if tempArr[i][0] == "#"
-            next
-        elsif  tempArr[i] == ""
-            next
-        elsif tempArr[i].match(/ORG\s+([0-9]+)/)
-            temp = tempArr[i].match(/ORG (.*)/)
-            objectFile += addition0Param(10, convertDecToBin(temp[1].to_i).to_s)+"\n"
-
-        elsif tempArr[i].match(/(DATA\s+)([0-9]+\s*)([,]\s*[0-9]+\s*)/)
-            dataArr = tempArr[i].match(/DATA (.*)/)
-            dataArr = dataArr[1].split(',')
-            for y in 0...dataArr.size
-                objectFile += convertTo16Bit(convertDecToBin(dataArr[y].to_i))+"\n"
-            end
-        else
-            objectFile += assembler(tempArr[i])+"\n"
-
-        end
-    end
-    File.write('testing.obj', objectFile)
-end
-#TODO disass->CPU.rb  dataInstruct->CPU.rb
 
 def assembler(mnemText)
     text = mnemText.match(/HALT|([A-Z]+)\s+([=@$]?)([0-9]+)/)
@@ -71,10 +44,3 @@ def assembler(mnemText)
 
 end
 
-
-
-#dffsfdвавыаываыввывы
-
-
-
-dataInstruc()

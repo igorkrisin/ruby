@@ -3,6 +3,35 @@ require 'optparse'
 require './arithmetic.rb'
 require './assembler.rb'
 
+def dataInstruc()
+    sourceCode =File.read("mnemonic.asm")
+    tempArr = sourceCode.split("\n")
+    objectFile = ""
+    for i in 0...tempArr.size
+        if tempArr[i][0] == "#"
+            next
+        elsif  tempArr[i] == ""
+            next
+        elsif tempArr[i].match(/ORG\s+([0-9]+)/)
+            temp = tempArr[i].match(/ORG (.*)/)
+            objectFile += addition0Param(10, convertDecToBin(temp[1].to_i).to_s)+"\n"
+
+        elsif tempArr[i].match(/(DATA\s+)([0-9]+\s*)([,]\s*[0-9]+\s*)/)
+            dataArr = tempArr[i].match(/DATA (.*)/)
+            dataArr = dataArr[1].split(',')
+            for y in 0...dataArr.size
+                objectFile += convertTo16Bit(convertDecToBin(dataArr[y].to_i))+"\n"
+            end
+        else
+            objectFile += assembler(tempArr[i])+"\n"
+
+        end
+    end
+    File.write('testing.obj', objectFile)
+end
+
+dataInstruc()
+
 def desAssemb(command)
     finishText = ""
     operatField, adressModeField, adressField = separWordField(command)
@@ -112,7 +141,7 @@ def mainLoop()
                 memory[convertBinToInt(mar)] = ac           #STORE
                 pc = binIncrement(pc)
             when "0011"					                    #CALL
-        	mbr = binIncrement(pc)
+        	mbr = convertTo16Bit(binIncrement(pc))
             #p "mbr in CALL: #{ binIncrement(pc)}"
         	memory[convertBinToInt(mar)] = mbr
         	pc = mar
@@ -170,27 +199,31 @@ end
 def traceRegister(ir, xr, mar, mbr, pc, ac, index)
     puts "ir: #{ir.slice(0,4).red}#{ir.slice(4,2).green}#{ir.slice(6,10).blue}(#{desAssemb(ir).yellow}); xr: #{xr}(#{convertBinToInt(xr).to_s.yellow}); mar: #{mar}(#{convertBinToInt(mar).to_s.yellow}); mbr: #{mbr}(#{convertBinToInt(mbr).to_s.yellow}); pc: #{pc}(#{convertBinToInt(pc).to_s.yellow}); ac: #{ac}(#{convertBinToInt(ac).to_s.yellow})) "
 end
-#puts "25 #{convertDecToBin(25)}\n"
-
- 
-#исправить
- 
-#puts arr[options[:trace].to_i]
- 
 
 def traceBitMemory(index, memArr)
     #arr = [0,1,2,3,4,5,6,7,8,9]
-    
     if index.length == 0
         raise "the trace index for memory is empty"
     end
-    if index.match(/^[0-9]+$/) && index.to_i >=0 && index.to_i <= 1024
-        print "mem[#{index.red}]: |#{memArr[index.to_i]}(#{convertBinToInt(memArr[index.to_i]).to_s.yellow})| "
+    if index.match(/^[0-9]+([,]?[0-9]?)*$/) && index.to_i >=0 && index.to_i <= 1024
+      regex = index.match(/^[0-9]+([,]?[0-9]?)*$/)[0].split(",")
+      #p regex[1]
+      for i in 0...regex.length
+        
+        inc = regex[i].to_i
+        if inc < 0 || inc > 1024
+          raise "wrong the range index for memory in trace bit memory --#{inc}--"
+        end
+        print "mem[#{inc.to_s.red}] #{memArr[inc]}(#{convertBinToInt(memArr[inc]).to_s.yellow}) "
+      end
          
-    elsif index.match(/^[0-9]*[-].[0-9]*$/)
-        temp =  index.split('-')
+    elsif index.match(/^([0-9]*[-][0-9]*),([\d,]+)$/)
+
+        temp =  index.match(/^([0-9]*[-][0-9]*),([\d,]+)$/)[1].split("-")
         startInd = temp[0]
         finishInd = temp[1]
+        indexIncrement = index.match(/^([0-9]*[-][0-9]*),([\d,]+)$/)[2].split(",")
+        #puts  "indexINcr: #{indexIncrement}"
         if startInd.to_i < 0 || startInd.to_i > 1024 
             raise "wrong the range index for memory in trace bit memory --#{startInd}--"
         end
@@ -198,7 +231,16 @@ def traceBitMemory(index, memArr)
             raise "wrong the range index for memory in trace bit memory --#{finishInd}--"
         end
         for i in startInd.to_i..finishInd.to_i
-            print "mem[#{i.to_s.red}]:#{memArr[i]}(#{convertBinToInt(memArr[i].slice(6,10)).to_s.yellow}); ""\n";
+            print "mem[#{i.to_s.red}]#{memArr[i]}(#{convertBinToInt(memArr[i]).to_s.yellow})| "
+        end
+        for i in 0...indexIncrement.length
+          #puts "test!"
+          if indexIncrement[i].to_i < 0 || indexIncrement[i].to_i > 1024
+            
+            raise "wrong the range index for memory in trace bit memory --#{indexIncrement}--"
+          end
+          indInt = indexIncrement[i].to_i
+          print "mem[#{indInt.to_s.red}]#{memArr[indexIncrement[i].to_i]}(#{convertBinToInt(memArr[indexIncrement[i].to_i]).to_s.yellow})| "
         end
         
     else
