@@ -96,7 +96,7 @@ def mainLoop()
     mbr = "0000000000000000"
     ir = "0000000000000000"
     pc = "0000000000"
-    xr = "0000000000000000"
+    xr = "0000000000"
     ac = "0000000000000000"
     memory = memArray
     memAdress = ""
@@ -116,13 +116,12 @@ def mainLoop()
                 mbr = convertTo16Bit(mar)
             when "10"               #Indexed mode   ($)
                 mar = adressField
-                mar = mar + xr
+                mar = additionBin(mar, xr)
             when "11"               #Inderect mode  (@)"
                 mar = adressField
                 mbr = memory[convertBinToInt(mar)]
-                mar = convertTo16Bit(mbr.slice(5,11))
+                mar = convertTo16Bit(mbr.slice(5,11))#??? TODO правмльно ли записаны индексы? в adress field записаны с 6 по 10
         end
-        #todo LOAD =2 ==> 2<-ac
         case operatField
             when "0000" 			                        #HALT
             #p "operatField: #{operatField}"
@@ -134,12 +133,16 @@ def mainLoop()
                 end
                 ac = mbr
                 pc = binIncrement(pc)
-            when "0010" 
-                if adressModeField != '01'
-                    mbr = memory[convertBinToInt(mar)]
-                end
-                memory[convertBinToInt(mar)] = ac           #STORE
-                pc = binIncrement(pc)
+            when "0010" 						#STORE
+        	if convertBinToInt(mar) == 0
+        	    xr = ac.slice(6, 10)
+        	else
+            	    if adressModeField != '01'
+                	mbr = memory[convertBinToInt(mar)]
+            	    end
+            	    memory[convertBinToInt(mar)] = ac               
+            	end
+            	pc = binIncrement(pc)
             when "0011"					                    #CALL
         	mbr = convertTo16Bit(binIncrement(pc))
             #p "mbr in CALL: #{ binIncrement(pc)}"
@@ -192,7 +195,7 @@ def mainLoop()
         traceBitMemory(options[:trace], memory)
     end
     #p "\nmemory in 628: #{memory}"
-    print convertBinToInt(ac)
+    puts "\nresult: #{convertBinToInt(ac)}"
 end
 
 
@@ -216,13 +219,13 @@ def traceBitMemory(index, memArr)
         end
         print "mem[#{inc.to_s.red}] #{memArr[inc]}(#{convertBinToInt(memArr[inc]).to_s.yellow}) "
       end
-         
-    elsif index.match(/^([0-9]*[-][0-9]*),([\d,]+)$/)
+                       #^([0-9]*[-][0-9]*),?([\d,]+)?$
+    elsif index.match(/^([0-9]+[-][0-9]+),?([\d,]+)?$/)
 
-        temp =  index.match(/^([0-9]*[-][0-9]*),([\d,]+)$/)[1].split("-")
+        temp =  index.match(/^([0-9]+[-][0-9]+),?([\d,]+)?$/)[1].split("-")
         startInd = temp[0]
         finishInd = temp[1]
-        indexIncrement = index.match(/^([0-9]*[-][0-9]*),([\d,]+)$/)[2].split(",")
+        
         #puts  "indexINcr: #{indexIncrement}"
         if startInd.to_i < 0 || startInd.to_i > 1024 
             raise "wrong the range index for memory in trace bit memory --#{startInd}--"
@@ -233,14 +236,17 @@ def traceBitMemory(index, memArr)
         for i in startInd.to_i..finishInd.to_i
             print "mem[#{i.to_s.red}]#{memArr[i]}(#{convertBinToInt(memArr[i]).to_s.yellow})| "
         end
-        for i in 0...indexIncrement.length
-          #puts "test!"
-          if indexIncrement[i].to_i < 0 || indexIncrement[i].to_i > 1024
-            
-            raise "wrong the range index for memory in trace bit memory --#{indexIncrement}--"
-          end
-          indInt = indexIncrement[i].to_i
-          print "mem[#{indInt.to_s.red}]#{memArr[indexIncrement[i].to_i]}(#{convertBinToInt(memArr[indexIncrement[i].to_i]).to_s.yellow})| "
+        if index.match(/^([0-9]+[-][0-9]+),?([\d,]+)?$/)[2] != nil
+            indexIncrement = index.match(/^([0-9]+[-][0-9]+),?([\d,]+)?$/)[2].split(",")
+            for i in 0...indexIncrement.length
+            #puts "test!"
+            if indexIncrement[i].to_i < 0 || indexIncrement[i].to_i > 1024
+                
+                raise "wrong the range index for memory in trace bit memory --#{indexIncrement}--"
+            end
+            indInt = indexIncrement[i].to_i
+            print "mem[#{indInt.to_s.red}]#{memArr[indexIncrement[i].to_i]}(#{convertBinToInt(memArr[indexIncrement[i].to_i]).to_s.yellow})| "
+            end
         end
         
     else

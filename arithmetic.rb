@@ -174,8 +174,8 @@ end
 def additionBin(bin1, bin2)
     carry = 0
     summ = ""
-    bin1 = addition0Param(bin2.size, bin1)
-    bin2 = addition0Param(bin1.size, bin2)
+    #bin1 = addition0Param(bin2.size, bin1)
+    #bin2 = addition0Param(bin1.size, bin2)
     for i in (bin1.size()-1).downto(0)
 	    temp = bin1[i].to_i+bin2[i].to_i+carry
 	    summ = (temp%2).to_s + summ
@@ -225,7 +225,7 @@ def subBinNew(bin1, bin2)
     for i in 0...bin2.size()
         if bin2[i] == "0"
             bin2[i] = "1"
-        else
+        elsef
             bin2[i] = "0"
         end
         #puts bin2[i]
