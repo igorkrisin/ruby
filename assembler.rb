@@ -11,22 +11,27 @@ def findLables()
     valueLable = 0
     for i in 0...tempArr.size
         temp = tempArr[i].match(/^(([A-Z]+)\s)?[A-Z]+\s+[=@$]?[0-9]+$/)
+        if temp == nil
+            print "mnemonic text with lable is wrong: "; p temp;
+            raise "line number: #{i}"
+        end
         arr = temp[0].split(" ")
         puts arr[1]
-        
         if arr[0] == "ORG"
             valueLable = arr[1].to_i-1
             puts "valueLable: #{valueLable}"
         end
-        if temp == nil
-            raise "mnemonic text with lable is wrong #{temp} #{i}"
-        elsif temp[1] != nil
+        
+        if temp[1] != nil
             lableDict[temp[2]] = valueLable
         end
         valueLable += 1
     end
     return lableDict
 end
+
+puts findLables()
+
 
 puts findLables()
 
