@@ -13,8 +13,10 @@ def dataInstruc()
         elsif  tempArr[i] == ""
             next
         elsif tempArr[i].match(/ORG\s+([0-9]+)/)
+            puts "tempARR: #{(tempArr[i])}"
             temp = tempArr[i].match(/ORG (.*)/)
             objectFile += addition0Param(10, convertDecToBin(temp[1].to_i).to_s)+"\n"
+            puts "objectFile: \n#{objectFile}"
 
         elsif tempArr[i].match(/(DATA\s+)([0-9]+\s*)([,]\s*[0-9]+\s*)/)
             dataArr = tempArr[i].match(/DATA (.*)/)
@@ -101,7 +103,7 @@ def mainLoop()
     memory = memArray
     memAdress = ""
     qyanAd = 0
-    fileRead('testing.obj', memory, memAdress)
+    fileRead('testing.obj', memory, memAdress) 
     while true
         ir = memory[convertBinToInt(pc)]
         #p "ir:  #{ir} pc: #{pc}"
@@ -189,10 +191,11 @@ def mainLoop()
                 pc = binIncrement(pc)
             else  raise "#{operatField} command is not supported"
         end
-        traceRegister(ir, xr, mar, mbr, pc, ac, index)                 #TRACER
+
+        traceRegister(ir, xr, mar, mbr, pc, ac, index)                 #TRACER REGISTER
     end
     if options[:trace] != nil
-        traceBitMemory(options[:trace], memory)
+        traceBitMemory(options[:trace], memory)                         #TRACER MEMORY
     end
     #p "\nmemory in 628: #{memory}"
     puts "\nresult: #{convertBinToInt(ac)}"

@@ -1,15 +1,29 @@
 #функция которая берет через аккумул. адрес массива и возвращает в акк сумму элементов массива. Сделать метки по книжке написать к ним регулярку 
-
-
-#array example
-
+ORG 7
+LOAD =1
+STORE 9
 ORG 10
-DATA 10,11,12,42,14,15
+DATA 19,21,31,41,51    
 ORG 0
 LOAD =10
 STORE 0
-LOAD $3
+LOAD $0
 HALT
+
+#LOAD =10
+#ADD =1
+#STORE 0
+#LOAD $0
+
+#array example
+
+#ORG 10
+#DATA 10,11,12,42,14,15
+#ORG 0
+#LOAD =10
+#STORE 0
+#LOAD $3
+#HALT
 
 
 #square square
